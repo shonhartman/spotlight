@@ -24,6 +24,9 @@ import logoStarbucks from '@/images/logos/starbucks.svg'
 import { generateRssFeed } from '@/lib/generateRssFeed'
 import { getAllArticles } from '@/lib/getAllArticles'
 import { formatDate } from '@/lib/formatDate'
+import { Canvas } from '@react-three/fiber'
+import {OrbitControls} from "@react-three/drei";
+
 
 function MailIcon(props) {
   return (
@@ -258,6 +261,7 @@ export default function Home({ articles }) {
           content="I’m Spencer, a software designer and entrepreneur based in New York City. I’m the founder and CEO of Planetaria, where we develop technologies that empower regular people to explore space on their own terms."
         />
       </Head>
+      {/* ABOVE THE FOLD */}
       <Container className="mt-9">
         <div className="max-w-2xl">
           <h1 className="text-4xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 sm:text-5xl">
@@ -268,6 +272,7 @@ export default function Home({ articles }) {
             I like to rock. Whether on a stage, developing software, or teaching Yoga. Count me in for 100%.
             I try to teach when called upon & learn whenever fortunate.
           </p>
+          {/* SOCIAL LINKS */}
           <div className="mt-6 flex gap-6">
             <SocialLink
               href="https://twitter.com"
@@ -292,7 +297,18 @@ export default function Home({ articles }) {
           </div>
         </div>
       </Container>
-      <Photos />
+      {/* BELOW THE FOLD */}
+      {/* 3D */}
+      <Canvas>
+        <OrbitControls makeDefault />
+        <ambientLight intensity={0.1} />
+        <directionalLight color="red" position={[0, 0, 5]} />
+        <mesh rotation-x={Math.PI * 0.25} rotation-y={Math.PI * 0.25} scale={2.5}>
+          <boxGeometry />
+          <meshStandardMaterial />
+        </mesh>
+      </Canvas>
+      {/* <Photos /> */}
       <Container className="mt-24 md:mt-28">
         <div className="mx-auto grid max-w-xl grid-cols-1 gap-y-20 lg:max-w-none lg:grid-cols-2">
           <div className="flex flex-col gap-16">
