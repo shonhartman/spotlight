@@ -1,86 +1,87 @@
 import { ArticleLayout } from '@/components/ArticleLayout'
 import Image from 'next/image'
-import designSystem from './planetaria-design-system.png'
+import javascriptSet from './JS_Set_2.png'
 
 export const meta = {
-  author: 'Adam Wathan',
-  date: '2022-09-05',
-  title: 'Crafting a design system for a multiplanetary future',
+  author: 'Shaun Hartman',
+  date: '2023-01-25',
+  title: 'Using Sets for Efficient Filtering in JavaScript',
   description:
     'Most companies try to stay ahead of the curve when it comes to visual design, but for Planetaria we needed to create a brand that would still inspire us 100 years from now when humanity has spread across our entire solar system.',
 }
 
 export default (props) => <ArticleLayout meta={meta} {...props} />
 
-Most companies try to stay ahead of the curve when it comes to visual design, but for Planetaria we needed to create a brand that would still inspire us 100 years from now when humanity has spread across our entire solar system.
+Filtering a collection of data can be a tricky task, especially when the data is repetitive. In this case, we're filtering a collection from Contentful, which is a collection of quizzes filtered by topic and grade level. Given the repetitive nature of the quizzes, I decided to use a Set() instead of an array.
 
-<Image src={designSystem} alt="" />
+<Image src={javascriptSet} alt="" />
 
-I knew that to get it right I was going to have to replicate the viewing conditions of someone from the future, so I grabbed my space helmet from the closet, created a new Figma document, and got to work.
+A Set is a collection of unique values. It has different methods from a primitive array, but I believe they are worth learning. For one thing, a Set doesn't have a .length property like a primitive array. This means that we will have to use the .size property to check the size of the Set.
 
-## Sermone fata
+## Example
 
-Lorem markdownum, bracchia in redibam! Terque unda puppi nec, linguae posterior
-in utraque respicere candidus Mimasque formae; quae conantem cervice. Parcite
-variatus, redolentia adeunt. Tyrioque dies, naufraga sua adit partibus celanda
-torquere temptata, erit maneat et ramos, [iam](#) ait dominari
-potitus! Tibi litora matremque fumantia condi radicibus opusque.
-
-Deus feram verumque, fecit, ira tamen, terras per alienae victum. Mutantur
-levitate quas ubi arcum ripas oculos abest. Adest [commissaque
-victae](#) in gemitus nectareis ire diva
-dotibus ora, et findi huic invenit; fatis? Fractaque dare superinposita
-nimiumque simulatoremque sanguine, at voce aestibus diu! Quid veterum hausit tu
-nil utinam paternos ima, commentaque.
-
-```c
-exbibyte_wins = gigahertz(3);
-grayscaleUtilityClient = control_uat;
-pcmciaHibernate = oop_virus_console(text_mountain);
-if (stateWaisFirewire >= -2) {
-    jfs = 647065 / ldapVrml(tutorialRestore, 85);
-    metal_runtime_parse = roomComputingResolution - toolbarUpload +
-            ipx_nvram_open;
-} else {
-    maximizeSidebar *= suffix_url(flatbed + 2, requirements_encoding_node +
-            only_qbe_media, minicomputer);
-}
+```tsx
+// Renders a filtered collection or the entire collection depending 
+// on the size of the filtered Set()
+return filteredQuizCards.size > 0 ? (
+  <Container>
+    // Turn it into an array from the Set() so that it can be mapped
+    {Array.from(filteredQuizCards).map((data: any) => {
+      return <QuizCard key={data.fields.quizTitle} data={data.fields.quizCard} />;
+    })}
+  </Container>
+) : (
+  <Container>
+    {quizCollection.map(data => {
+      return <QuizCard key={data.fields.quizTitle} data={data.fields.quizCard} />;
+    })}
+  </Container>
+);
 ```
 
-Aere repetiti cognataque natus. Habebat vela solutis saepe munus nondum adhuc
-oscula nomina pignora corpus deserat.
+Filtering by the quiz various selections creates an array within an array. To get past the array of arrays dilemma, I found the .flat() method. The .flat() method creates a new array with all sub-array elements concatenated into it recursively up to the specified depth. This is useful when we want to flatten an array of arrays.
 
-## Lethaei Pindumve me quae dinumerat Pavor
-
-Idem se saxa fata pollentibus geminos; quos pedibus. Est urnis Herses omnes nec
-divite: et ille illa furit sim verbis Cyllenius.
-
-1. Captus inpleverunt collo
-2. Nec nam placebant
-3. Siquos vulgus
-4. Dictis carissime fugae
-5. A tacitos nulla viginti
-
-Ungues fistula annoso, ille addit linoque motatque uberior verso
-[rubuerunt](#) confine desuetaque. _Sanguine_ anteit
-emerguntque expugnacior est pennas iniqui ecce **haeret** genus: peiora imagine
-fossas Cephisos formosa! Refugitque amata [refelli](#)
-supplex. Summa brevis vetuere tenebas, hostes vetantis, suppressit, arreptum
-regna. Postquam conpescit iuvenis habet corpus, et erratica, perdere, tot mota
-ars talis.
-
-```c
-digital.webcam_dual_frequency = webmasterMms;
-if (5 + language_standalone_google) {
-    cc_inbox_layout *= file_character;
-    task += p;
-    lockUnicode += enterprise_monochrome(tokenFunctionPersonal, keyVirtual,
-            adf);
-}
-windows_binary_esports(87734, array(restoreRomTopology, adRaw(407314),
-        dongleBashThumbnail), interpreter);
+```tsx
+// Topic filter
+const output = currentTopics
+  .map(topic => quizCollection.filter(quiz => quiz.fields.filters.fields.topic.includes(topic)))
+  .flat(Infinity);
 ```
 
-Sit volat naturam; motu Cancri. Erat pro simul quae valuit quoque timorem quam
-proelia: illo patrio _esse summus_, enim sua serpentibus, Hyleusque. Est coniuge
-recuso; refert Coroniden ignotos manat, adfectu.
+A Set has a method called add(). We can use this method to add the output to the Set easily.
+
+```tsx
+// Only difficulty has been selected
+const output = currentDifficultySelection
+  .map(difficulty => quizCollection.filter(quiz => quiz.fields.filters.fields.difficulty.includes(difficulty)))
+  .flat(Infinity);
+
+output.map(card => filteredQuizCards.add(card));
+```
+
+This works great! Now, let's say we want to combine the filters. For example, we want to filter by both topics and difficulty selection. We can do this by filtering both outputs by each other.
+
+```tsx
+// Filter by topics
+const topicOutput = currentTopics
+  .map(topic => quizCollection.filter(quiz => 
+    quiz.fields.filters.fields.topic.includes(topic)))
+  .flat(Infinity);
+
+// Filter by difficulty selection
+const difficultyOutput = currentDifficultySelection
+  .map(difficulty => quizCollection.filter(quiz => 
+    quiz.fields.filters.fields.difficulty.includes(difficulty)))
+  .flat(Infinity);
+
+// Filter both outputs by each other
+const doubleFiltered = difficultyOutput
+  .map((difficultyCard: any) =>
+    topicOutput
+```
+
+In conclusion, using a Set to filter a collection of data can be a powerful tool in certain cases. In this example, we were able to filter a collection of quizzes from Contentful by topic and grade level using a Set. The .flat() method was also used to flatten an array of arrays.
+
+The Set() doesn't have a .length property like a primitive array, but instead has .size property to check the number of element inside set and .add() method to add new element. Furthermore, we were also able to combine multiple filters to create a more specific set of data.
+
+Using a Set can be a little more difficult to understand for other developers, but it can make your code more efficient and effective. If you decide to use a Set, make sure to document your code well and be prepared to explain your thought process to your team.
