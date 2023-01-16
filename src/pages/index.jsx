@@ -24,8 +24,7 @@ import logoStarbucks from '@/images/logos/starbucks.svg'
 import { generateRssFeed } from '@/lib/generateRssFeed'
 import { getAllArticles } from '@/lib/getAllArticles'
 import { formatDate } from '@/lib/formatDate'
-import { Canvas } from '@react-three/fiber'
-import {OrbitControls} from "@react-three/drei";
+import {Slider} from '../components/Slider'
 
 
 function MailIcon(props) {
@@ -249,6 +248,26 @@ function Photos() {
   )
 }
 
+// SLIDER DATA
+// EXAMPLE URL -- https://images.pexels.com/photos/12114771/pexels-photo-12114771.jpeg
+const pexel = (id) => `https://images.pexels.com/photos/${id}//pexels-photo-${id}.jpeg`
+
+const images = [
+  // Front
+  { position: [0, 0, 1.5], rotation: [0, 0, 0], url: pexel(15067963) },
+  // Back
+  { position: [-0.8, 0, -0.6], rotation: [0, 0, 0], url: pexel(12114771) },
+  { position: [0.8, 0, -0.6], rotation: [0, 0, 0], url: pexel(5898563) },
+  // Left
+  { position: [-1.75, 0, 0.25], rotation: [0, Math.PI / 2.5, 0], url: pexel(4816756) },
+  { position: [-2.15, 0, 1.5], rotation: [0, Math.PI / 2.5, 0], url: pexel(4816757) },
+  { position: [-2, 0, 2.75], rotation: [0, Math.PI / 2.5, 0], url: pexel(5560297) },
+  // Right
+  { position: [1.75, 0, 0.25], rotation: [0, -Math.PI / 2.5, 0], url: pexel(5560372) },
+  { position: [2.15, 0, 1.5], rotation: [0, -Math.PI / 2.5, 0], url: pexel(5069290) },
+  { position: [2, 0, 2.75], rotation: [0, -Math.PI / 2.5, 0], url: pexel(5368955) }
+]
+
 export default function Home({ articles }) {
   return (
     <>
@@ -297,17 +316,11 @@ export default function Home({ articles }) {
           </div>
         </div>
       </Container>
+      {/* 3D SLIDER */}
+      <div className='relative -top-52'>
+        <Slider images={images} />
+      </div>
       {/* BELOW THE FOLD */}
-      {/* 3D */}
-      <Canvas>
-        <OrbitControls makeDefault />
-        <ambientLight intensity={0.1} />
-        <directionalLight color="red" position={[0, 0, 5]} />
-        <mesh rotation-x={Math.PI * 0.25} rotation-y={Math.PI * 0.25} scale={2.5}>
-          <boxGeometry />
-          <meshStandardMaterial />
-        </mesh>
-      </Canvas>
       {/* <Photos /> */}
       <Container className="mt-24 md:mt-28">
         <div className="mx-auto grid max-w-xl grid-cols-1 gap-y-20 lg:max-w-none lg:grid-cols-2">
