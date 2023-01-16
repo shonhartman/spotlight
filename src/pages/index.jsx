@@ -12,11 +12,11 @@ import {
   GitHubIcon,
   LinkedInIcon,
 } from '@/components/SocialIcons'
-import image1 from '@/images/photos/image-1.jpg'
-import image2 from '@/images/photos/image-2.jpg'
-import image3 from '@/images/photos/image-3.jpg'
-import image4 from '@/images/photos/image-4.jpg'
-import image5 from '@/images/photos/image-5.jpg'
+import image1 from '@/images/photos/rocking.png'
+import image2 from '@/images/photos/cooking.png'
+import image3 from '@/images/photos/yoga_class.png'
+import image4 from '@/images/photos/onewheel.png'
+import image5 from '@/images/photos/coding.png'
 import logoAirbnb from '@/images/logos/airbnb.svg'
 import logoFacebook from '@/images/logos/facebook.svg'
 import logoPlanetaria from '@/images/logos/planetaria.svg'
@@ -265,8 +265,8 @@ export default function Home({ articles }) {
           </h1>
           <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">
             I’m Shaun, a software engineer at Big Human and a life long creator based in Little Rock.<br></br>
-            I like to rock.
-            I try to teach whenever called upon & learn whenever fortunate.
+            I like to rock. Whether on a stage, developing software, or teaching Yoga. Count me in for 100%.
+            I try to teach when called upon & learn whenever fortunate.
           </p>
           <div className="mt-6 flex gap-6">
             <SocialLink
