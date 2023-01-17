@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Head from 'next/head'
 import Link from 'next/link'
+import { useRecoilState } from 'recoil';
 import clsx from 'clsx'
 
 import { Button } from '@/components/Button'
@@ -25,6 +26,7 @@ import { generateRssFeed } from '@/lib/generateRssFeed'
 import { getAllArticles } from '@/lib/getAllArticles'
 import { formatDate } from '@/lib/formatDate'
 import {Slider} from '../components/Slider'
+import { sliderActiveState } from '../state/slider-active';
 
 
 function MailIcon(props) {
@@ -128,7 +130,7 @@ function Newsletter() {
           placeholder="Email address"
           aria-label="Email address"
           required
-          className="min-w-0 flex-auto appearance-none rounded-md border border-zinc-900/10 bg-white px-3 py-[calc(theme(spacing.2)-1px)] shadow-md shadow-zinc-800/5 placeholder:text-zinc-400 focus:border-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-500/10 dark:border-zinc-700 dark:bg-zinc-700/[0.15] dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:focus:border-teal-400 dark:focus:ring-teal-400/10 sm:text-sm"
+          className="min-w-0 flex-auto appearance-none rounded-md border border-zinc-900/10 bg-white px-3 py-[calc(theme(spacing.2)-1px)] shadow-md shadow-zinc-800/5 placeholder:text-zinc-400 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-zinc-700 dark:bg-zinc-700/[0.15] dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:focus:border-purple-400 dark:focus:ring-purple-400/10 sm:text-sm"
         />
         <Button type="submit" className="ml-4 flex-none">
           Join
@@ -249,26 +251,22 @@ function Photos() {
 }
 
 // SLIDER DATA
-// EXAMPLE URL -- https://images.pexels.com/photos/12114771/pexels-photo-12114771.jpeg
-const pexel = (id) => `https://images.pexels.com/photos/${id}//pexels-photo-${id}.jpeg`
-
 const images = [
   // Front
-  { position: [0, 0, 1.5], rotation: [0, 0, 0], url: pexel(15067963) },
-  // Back
-  { position: [-0.8, 0, -0.6], rotation: [0, 0, 0], url: pexel(12114771) },
-  { position: [0.8, 0, -0.6], rotation: [0, 0, 0], url: pexel(5898563) },
+  { position: [0, 0, 2.95], rotation: [0, 0, 0], url: 'https://i.postimg.cc/28N7Q7Tq/rocking.png' },
   // Left
-  { position: [-1.75, 0, 0.25], rotation: [0, Math.PI / 2.5, 0], url: pexel(4816756) },
-  { position: [-2.15, 0, 1.5], rotation: [0, Math.PI / 2.5, 0], url: pexel(4816757) },
-  { position: [-2, 0, 2.75], rotation: [0, Math.PI / 2.5, 0], url: pexel(5560297) },
+  { position: [-1.35, 0, 2.8], rotation: [0, 0, -0.01], url: 'https://i.postimg.cc/7PfWs9gm/cooking.png' },
+  { position: [-2.45, 0, 3], rotation: [0, 0, -0.02], url: 'https://i.postimg.cc/mDh8nZFt/onewheel.png' },
   // Right
-  { position: [1.75, 0, 0.25], rotation: [0, -Math.PI / 2.5, 0], url: pexel(5560372) },
-  { position: [2.15, 0, 1.5], rotation: [0, -Math.PI / 2.5, 0], url: pexel(5069290) },
-  { position: [2, 0, 2.75], rotation: [0, -Math.PI / 2.5, 0], url: pexel(5368955) }
+  { position: [1.4, 0, 2.75], rotation: [0, -0, -0.01], url: 'https://i.postimg.cc/xC7J66nw/coding.png' },
+  { position: [2.5, 0, 3], rotation: [0, -0, 0.01], url: 'https://i.postimg.cc/bwNbgCnv/yoga-class.png' }
 ]
 
+
 export default function Home({ articles }) {
+  // SLIDER STATE
+  const [active, setSliderState] = useRecoilState(sliderActiveState);
+
   return (
     <>
       <Head>
@@ -281,8 +279,8 @@ export default function Home({ articles }) {
         />
       </Head>
       {/* ABOVE THE FOLD */}
-      <Container className="mt-9">
-        <div className="max-w-2xl">
+      <Container className={clsx('mt-9', {'relative': active})}>
+        <div className={clsx('max-w-2xl', {'absolute': active})}>
           <h1 className="text-4xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 sm:text-5xl">
           Shaun Hartman - Digital Creator
           </h1>
@@ -316,13 +314,15 @@ export default function Home({ articles }) {
           </div>
         </div>
       </Container>
+      {/* <Photos /> */}
       {/* 3D SLIDER */}
-      <div className='relative -top-52'>
+      <div className={clsx('', {'relative': active, 'z-10': active, 'h-[2000px]': active})}>
+      {/* <div className='relative -top-28 xl:-top-32 z-10'> */}
         <Slider images={images} />
       </div>
       {/* BELOW THE FOLD */}
-      {/* <Photos /> */}
-      <Container className="mt-24 md:mt-28">
+      <Container className={clsx('', {'relative -mt-32 -top-[1160px] z-0': active})}>
+      {/* <Container className="relative -mt-32 -top-96 z-0"> */}
         <div className="mx-auto grid max-w-xl grid-cols-1 gap-y-20 lg:max-w-none lg:grid-cols-2">
           <div className="flex flex-col gap-16">
             {articles.map((article) => (
