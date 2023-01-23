@@ -255,11 +255,11 @@ const images = [
   // Front
   { position: [0, 0, 2.95], rotation: [0, 0, 0], url: '/rocking.png' },
   // Left
-  { position: [-1.35, 0, 2.8], rotation: [0, 0, -0.01], url: '/cooking.png' },
-  { position: [-2.45, 0, 3], rotation: [0, 0, -0.02], url: '/onewheel.png' },
+  { position: [-1.35, 0, 2.8], rotation: [0, 0, -0.01], url: 'src/images/photos/cooking.png' },
+  { position: [-2.45, 0, 3], rotation: [0, 0, -0.02], url: 'src/images/photos/onewheel.png' },
   // Right
-  { position: [1.4, 0, 2.75], rotation: [0, -0, -0.01], url: '/coding.png' },
-  { position: [2.5, 0, 3], rotation: [0, -0, 0.01], url: '/yoga_class.png' }
+  { position: [1.4, 0, 2.75], rotation: [0, -0, -0.01], url: 'src/images/photos/coding.png' },
+  { position: [2.5, 0, 3], rotation: [0, -0, 0.01], url: 'src/images/photos/yoga-class.png' }
 ]
 
 
