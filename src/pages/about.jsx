@@ -9,7 +9,7 @@ import {
   InstagramIcon,
   GitHubIcon,
   LinkedInIcon,
-} from '@/components/SocialIcons'
+} from '@/social/SocialIcons'
 import portraitImage from '@/images/portrait.jpg'
 
 function SocialLink({ className, href, children, icon: Icon }) {
@@ -41,10 +41,10 @@ export default function About() {
   return (
     <>
       <Head>
-        <title>About - Spencer Sharp</title>
+        <title>About - Shaun Hartman</title>
         <meta
           name="description"
-          content="I’m Spencer Sharp. I live in New York City, where I design the future."
+          content="I’m Shaun Hartman. I live in Little Rock, where I build the future for Big Human clients."
         />
       </Head>
       <Container className="mt-16 sm:mt-32">
@@ -61,15 +61,12 @@ export default function About() {
           </div>
           <div className="lg:order-first lg:row-span-2">
             <h1 className="text-4xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 sm:text-5xl">
-              I’m Spencer Sharp. I live in New York City, where I design the
-              future.
+            Hi 👋 I’m Shaun Hartman. I live in Little Rock, where I build the future for Big Human clients.
             </h1>
             <div className="mt-6 space-y-7 text-base text-zinc-600 dark:text-zinc-400">
               <p>
-                I’ve loved making things for as long as I can remember, and
-                wrote my first program when I was 6 years old, just two weeks
-                after my mom brought home the brand new Macintosh LC 550 that I
-                taught myself to type on.
+                I’ve loved making things for as long as I can remember, as a kid I was always drawing, 
+                I was a scatter brained artist until technology gave me a plethora of tools to balance myself.
               </p>
               <p>
                 The only thing I loved more than computers as a kid was space.
@@ -86,10 +83,8 @@ export default function About() {
                 photo back down to our family computer from space.
               </p>
               <p>
-                Today, I’m the founder of Planetaria, where we’re working on
-                civilian space suits and manned shuttle kits you can assemble at
-                home so that the next generation of kids really <em>can</em>{' '}
-                make it to orbit — from the comfort of their own backyards.
+                Today, I’m at Big Human, where I have the honor of working with the 
+                clients at the forefront of innovation.
               </p>
             </div>
           </div>

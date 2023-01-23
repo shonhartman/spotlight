@@ -12,7 +12,7 @@ import {
   InstagramIcon,
   GitHubIcon,
   LinkedInIcon,
-} from '@/components/SocialIcons'
+} from '@/social/SocialIcons'
 import image1 from '@/images/photos/rocking.png'
 import image2 from '@/images/photos/cooking.png'
 import image3 from '@/images/photos/yoga_class.png'
