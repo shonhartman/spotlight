@@ -1,9 +1,9 @@
 import Image from 'next/image'
 import { Button } from '@/components/Button'
 import {BriefcaseIcon, ArrowDownIcon} from '../components/icons/Icons'
-import logoAirbnb from '@/images/logos/airbnb.svg'
+import laperoLogo from '@/images/logos/lapero.svg'
 import logoFacebook from '@/images/logos/facebook.svg'
-import logoPlanetaria from '@/images/logos/planetaria.svg'
+import logoPlanetaria from '@/images/logos/big-human.svg'
 import logoStarbucks from '@/images/logos/starbucks.svg'
 
 export default function Resume() {
@@ -20,8 +20,8 @@ export default function Resume() {
     },
     {
       company: 'Lapero',
-      title: 'Director of Element Platform & Support',
-      logo: logoAirbnb,
+      title: 'Director of Element Platform',
+      logo: laperoLogo,
       start: '2020',
       end: '2022',
     },
@@ -43,9 +43,9 @@ export default function Resume() {
       company: 'Boys & Girls Clubs of Central Arkansas',
       title: 'Music Enrichment Director',
       logo: logoStarbucks,
-      start: '2017',
-      end: '2019',
-    },
+      start: '2007',
+      end: '2017',
+    }
   ]
 
   return (
