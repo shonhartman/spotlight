@@ -9,6 +9,21 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
   },
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.pdf$/,
+      use: [
+        {
+          loader: 'file-loader',
+          options: {
+            name: '[name].[ext]',
+            outputPath: 'static/files',
+          },
+        },
+      ],
+    });
+    return config;
+  },
 }
 
 const withMDX = nextMDX({

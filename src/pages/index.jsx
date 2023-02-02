@@ -54,8 +54,9 @@ export default function Home({ articles }) {
           </h1>
           <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">
             I’m Shaun, a software engineer at Big Human and a life long creator based in Little Rock.<br></br>
-            I like to rock. Whether on a stage, developing software, or teaching Yoga. Count me in for 100%.
-            I try to teach when called upon & learn whenever fortunate.
+            I like to rock. Whether on a stage, developing software, or teaching Yoga. Count me in for 100%. 
+            Everything is enhanced by the digital. So, maybe I can truly say 110% & beyond.
+            I try to teach whenever called upon & learn whenever fortunate.
           </p>
           {/* SOCIAL LINKS */}
           <div className="mt-6 flex gap-6">
