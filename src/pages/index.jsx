@@ -61,22 +61,17 @@ export default function Home({ articles }) {
           {/* SOCIAL LINKS */}
           <div className="mt-6 flex gap-6">
             <SocialLink
-              href="https://twitter.com"
-              aria-label="Follow on Twitter"
-              icon={TwitterIcon}
-            />
-            <SocialLink
-              href="https://instagram.com"
+              href="https://www.instagram.com/shaunpaulhartman"
               aria-label="Follow on Instagram"
               icon={InstagramIcon}
             />
             <SocialLink
-              href="https://github.com"
+              href="https://github.com/shonhartman"
               aria-label="Follow on GitHub"
               icon={GitHubIcon}
             />
             <SocialLink
-              href="https://linkedin.com"
+              href="https://www.linkedin.com/in/shaun-hartman-1909a42b"
               aria-label="Follow on LinkedIn"
               icon={LinkedInIcon}
             />

@@ -275,7 +275,7 @@ export default function Home({ articles }) {
               icon={GitHubIcon}
             />
             <SocialLink
-              href="https://www.linkedin.com/in/shaun-hartman-1909a42b/"
+              href="https://www.linkedin.com/in/shaun-hartman-1909a42b"
               aria-label="Connect on LinkedIn"
               icon={LinkedInIcon}
             />
