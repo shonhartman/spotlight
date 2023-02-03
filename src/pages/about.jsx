@@ -9,7 +9,7 @@ import {
   GitHubIcon,
   LinkedInIcon,
 } from '@/social/SocialIcons'
-import portraitImage from '@/images/shaun-portrait.jpg'
+import portraitImage from '../images/photos/shaun-portrait.jpg'
 
 function SocialLink({ className, href, children, icon: Icon }) {
   return (
