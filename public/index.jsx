@@ -12,7 +12,7 @@ import {
   InstagramIcon,
   GitHubIcon,
   LinkedInIcon,
-} from '@/components/SocialIcons'
+} from '@/social/SocialIcons'
 import image1 from '@/images/photos/rocking.png'
 import image2 from '@/images/photos/cooking.png'
 import image3 from '@/images/photos/yoga_class.png'
@@ -223,33 +223,6 @@ function Resume() {
   )
 }
 
-function Photos() {
-  let rotations = ['rotate-2', '-rotate-2', 'rotate-2', 'rotate-2', '-rotate-2']
-
-  return (
-    <div className="mt-16 sm:mt-20">
-      <div className="-my-4 flex justify-center gap-5 overflow-hidden py-4 sm:gap-8">
-        {[image1, image2, image3, image4, image5].map((image, imageIndex) => (
-          <div
-            key={image.src}
-            className={clsx(
-              'relative aspect-[9/10] w-44 flex-none overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800 sm:w-72 sm:rounded-2xl',
-              rotations[imageIndex % rotations.length]
-            )}
-          >
-            <Image
-              src={image}
-              alt=""
-              sizes="(min-width: 640px) 18rem, 11rem"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 // SLIDER DATA
 const images = [
   // Front
@@ -292,32 +265,25 @@ export default function Home({ articles }) {
           {/* SOCIAL LINKS */}
           <div className="mt-6 flex gap-6">
             <SocialLink
-              href="https://twitter.com"
-              aria-label="Follow on Twitter"
-              icon={TwitterIcon}
-            />
-            <SocialLink
-              href="https://instagram.com"
+              href="https://www.instagram.com/shaunpaulhartman"
               aria-label="Follow on Instagram"
               icon={InstagramIcon}
             />
             <SocialLink
-              href="https://github.com"
+              href="https://github.com/shonhartman"
               aria-label="Follow on GitHub"
               icon={GitHubIcon}
             />
             <SocialLink
-              href="https://linkedin.com"
-              aria-label="Follow on LinkedIn"
+              href="https://www.linkedin.com/in/shaun-hartman-1909a42b"
+              aria-label="Connect on LinkedIn"
               icon={LinkedInIcon}
             />
           </div>
         </div>
       </Container>
-      {/* <Photos /> */}
       {/* 3D SLIDER */}
       <div className={clsx('', {'relative': active, 'z-10': active, 'h-[2000px]': active})}>
-      {/* <div className='relative -top-28 xl:-top-32 z-10'> */}
         <Slider images={images} />
       </div>
       {/* BELOW THE FOLD */}
