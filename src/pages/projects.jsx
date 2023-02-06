@@ -13,8 +13,8 @@ const projects = [
   {
     name: 'Planetaria',
     description:
-      'Creating technology to empower civilians to explore space on their own terms.',
-    link: { href: 'http://planetaria.tech', label: 'planetaria.tech' },
+      'This is a fun quiz app for kids that I had a great time building for Carnegie Hall via Big Human.',
+    link: { href: 'https://kids.carnegiehall.org', label: 'kids.carnegiehall.org' },
     logo: logoPlanetaria,
   },
   {
@@ -62,15 +62,15 @@ export default function Projects() {
   return (
     <>
       <Head>
-        <title>Projects - Spencer Sharp</title>
+        <title>Projects - Shaun Hartman</title>
         <meta
           name="description"
-          content="Things I’ve made trying to put my dent in the universe."
+          content="Some cool things I’ve made."
         />
       </Head>
       <SimpleLayout
-        title="Things I’ve made trying to put my dent in the universe."
-        intro="I’ve worked on tons of little projects over the years but these are the ones that I’m most proud of. Many of them are open-source, so if you see something that piques your interest, check out the code and contribute if you have ideas for how it can be improved."
+        title="Some cool things I've made."
+        intro="I’ve worked on quite a few projects over the years here are some highlights."
       >
         <ul
           role="list"

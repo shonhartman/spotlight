@@ -5,12 +5,11 @@ import clsx from 'clsx'
 
 import { Container } from '@/components/Container'
 import {
-  TwitterIcon,
   InstagramIcon,
   GitHubIcon,
   LinkedInIcon,
-} from '@/components/SocialIcons'
-import portraitImage from '@/images/portrait.jpg'
+} from '@/social/SocialIcons'
+import portraitImage from '../images/photos/shaun-portrait.jpg'
 
 function SocialLink({ className, href, children, icon: Icon }) {
   return (
@@ -41,10 +40,10 @@ export default function About() {
   return (
     <>
       <Head>
-        <title>About - Spencer Sharp</title>
+        <title>About - Shaun Hartman</title>
         <meta
           name="description"
-          content="I’m Spencer Sharp. I live in New York City, where I design the future."
+          content="I’m Shaun Hartman. I live in Little Rock, where I build the future for Big Human clients."
         />
       </Head>
       <Container className="mt-16 sm:mt-32">
@@ -61,58 +60,48 @@ export default function About() {
           </div>
           <div className="lg:order-first lg:row-span-2">
             <h1 className="text-4xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 sm:text-5xl">
-              I’m Spencer Sharp. I live in New York City, where I design the
-              future.
+            Hi 👋 I’m Shaun Hartman.
             </h1>
             <div className="mt-6 space-y-7 text-base text-zinc-600 dark:text-zinc-400">
               <p>
-                I’ve loved making things for as long as I can remember, and
-                wrote my first program when I was 6 years old, just two weeks
-                after my mom brought home the brand new Macintosh LC 550 that I
-                taught myself to type on.
+                I’ve loved making things for as long as I can remember, as a kid I was always drawing, 
+                I was a scatter brained artist until technology gave me a plethora of tools to balance myself.
               </p>
               <p>
-                The only thing I loved more than computers as a kid was space.
-                When I was 8, I climbed the 40-foot oak tree at the back of our
-                yard while wearing my older sister’s motorcycle helmet, counted
-                down from three, and jumped — hoping the tree was tall enough
-                that with just a bit of momentum I’d be able to get to orbit.
+                Learning to play the guitar pulled me from a deep despair as a teen. 
+                It was the first thing that I gained mastery over. Music has remained a staple in 
+                my life. It is the lens that I first used to model my learning. Writing a song is an 
+                interesting work. The materials are quite abstract, much like software engineering. 
+                Giving structure to abstraction is a skill that I am ever refining. It 
+                continues to be very rewarding. My life as a musician hasn&apos;t paid much, but 
+                it has given me many skills of which leadership and teamwork have been at the forefront.
+                My engineering skills have poured back into the music & branched out to support other ventures
+                such as acting. Most recently 3D art is coming into my grasp. I love to learn & I love 
+                the creative process.
               </p>
               <p>
-                I spent the next few summers indoors working on a rocket design,
-                while I recovered from the multiple surgeries it took to fix my
-                badly broken legs. It took nine iterations, but when I was 15 I
-                sent my dad’s Blackberry into orbit and was able to transmit a
-                photo back down to our family computer from space.
-              </p>
-              <p>
-                Today, I’m the founder of Planetaria, where we’re working on
-                civilian space suits and manned shuttle kits you can assemble at
-                home so that the next generation of kids really <em>can</em>{' '}
-                make it to orbit — from the comfort of their own backyards.
+                Today, I&apos;m at Big Human, where I have the honor of working with the 
+                clients at the forefront of innovation.
               </p>
             </div>
           </div>
           <div className="lg:pl-20">
             <ul role="list">
-              <SocialLink href="#" icon={TwitterIcon}>
-                Follow on Twitter
-              </SocialLink>
-              <SocialLink href="#" icon={InstagramIcon} className="mt-4">
+              <SocialLink href="https://www.instagram.com/shaunpaulhartman" icon={InstagramIcon} className="mt-4">
                 Follow on Instagram
               </SocialLink>
-              <SocialLink href="#" icon={GitHubIcon} className="mt-4">
+              <SocialLink href="https://github.com/shonhartman" icon={GitHubIcon} className="mt-4">
                 Follow on GitHub
               </SocialLink>
-              <SocialLink href="#" icon={LinkedInIcon} className="mt-4">
+              <SocialLink href="https://www.linkedin.com/in/shaun-hartman-1909a42b" icon={LinkedInIcon} className="mt-4">
                 Follow on LinkedIn
               </SocialLink>
               <SocialLink
-                href="mailto:spencer@planetaria.tech"
+                href="mailto:shaunhartman@icloud.com"
                 icon={MailIcon}
                 className="mt-8 border-t border-zinc-100 pt-8 dark:border-zinc-700/40"
               >
-                spencer@planetaria.tech
+                shaunhartman@icloud.com
               </SocialLink>
             </ul>
           </div>
