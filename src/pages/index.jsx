@@ -46,6 +46,7 @@ export default function Home({ articles }) {
           content="I’m Shaun, a software engineer at Big Human most of the time. When I'm not creating for clients, I'm creating for the world & enjoying my family."
         />
       <meta name="og:title" content="Shaun Hartman | Digital Creator" />
+      <meta name="og:image" content="/images/photos/shaun-portrait.jpg" />
 
       </Head>
       {/* ABOVE THE FOLD */}
