@@ -43,8 +43,11 @@ export default function Home({ articles }) {
         </title>
         <meta
           name="description"
-          content="I’m Spencer, a software designer and entrepreneur based in New York City. I’m the founder and CEO of Planetaria, where we develop technologies that empower regular people to explore space on their own terms."
+          content="I’m Shaun, a software engineer at Big Human most of the time. When I'm not creating for clients, I'm creating for the world & enjoying my family."
         />
+      <meta name="og:title" content="Shaun Hartman | Digital Creator" />
+      <meta name="og:image" content="/shaun-portrait.jpg" />
+
       </Head>
       {/* ABOVE THE FOLD */}
       <Container className={clsx('mt-9', {'relative': active})}>
