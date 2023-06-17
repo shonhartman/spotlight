@@ -1,0 +1,136 @@
+import { ArticleLayout } from '@/components/article/ArticleLayout'
+import Image from 'next/image'
+import levenshteinImage from './levenshtein_image.png'
+
+export const meta = {
+  author: 'Shaun Hartman',
+  date: '2023-06-22',
+  title: 'The Levenshtein Algorithm: Math Magic for String Comparison',
+  description:
+    'Learn how to add this small but mighty algorithm to your tool set and implement string comparison in 50 shades of grey.',
+}
+
+export default (props) => <ArticleLayout meta={meta} {...props} />
+
+During a recent conversation with two of my favorite thinkers that I'm lucky enough to be able to converse with in person, we explored the impact of quantum computing on artificial intelligence. 
+
+<Image src={levenshteinImage} alt="AI quantum computing" />
+
+Recently I was working on integrating a proxy service for translations when this became a challenging array to work with. The getLocalizedPath() function no longer returned translated slugs because the proxy service always translates from the English version of the page. So the slugs were in English & no longer matched what was in the URL. 
+```ts
+const useLocalizedTabs = () => {
+  const { getLocalizedPath } = useLocalizedURL();
+  const { t } = useI18n();
+  const tabs = [
+    {
+      label: 'tickets',
+      slug: localeRoutes.PLAN_YOUR_VISIT_NOT_TRANSLATED,
+    },
+    {
+      label: 'what_to_expect',
+      slug: localeRoutes.WHAT_TO_EXPECT_NOT_TRANSLATED,
+    },
+    {
+      label: 'directions',
+      slug: localeRoutes.DIRECTIONS_NOT_TRANSLATED,
+    },
+    {
+      label: 'accessibility',
+      slug: localeRoutes.ACCESSIBILITY_NOT_TRANSLATED,
+    },
+    {
+      label: 'compare_tickets',
+      slug: localeRoutes.COMPARE_NOT_TRANSLATED,
+    },
+  ];
+
+  const localizedTabs = tabs.map((tab) => ({
+    label: t(tab.label, { namespace: 'tor' }),
+    slug: getLocalizedPath(tab.slug),
+  }));
+
+  return localizedTabs;
+};
+```
+
+Since we do still have the labels translated by i18n, we have something to work with. But, much of the time, there is no exact match from URL to label. And, the URLs can be changed by the proxy.
+So, I needed to find the closest match. That's where the Levenshtein formula came in clutch.
+
+```ts
+const closestLabelMatch = localizedTabs
+  .map((tab) => {
+    // The label is title case
+    const formattedLabel = tab.label
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '');
+
+    // The second to last segment of the URL is what should match the label
+    const pathSegments = decodeURI(location.pathname).split('/');
+    const pathSegmentToMatch = pathSegments[pathSegments.length - 2];
+
+    // Calculate similarity between strings
+    const similarity = levenshteinDistance(
+      formattedLabel,
+      pathSegmentToMatch,
+    );
+
+    // Add the similarity calculation result to the tab object
+    return {
+      ...tab,
+      similarity,
+    };
+  })
+  .sort((a, b) => {
+    // Sort the tabs by ascending distance
+    return a.similarity - b.similarity;
+  })[0].label;
+
+// Finally we get the index for the active tab
+const activeTab = localizedTabs.findIndex(({ label }) => {
+  return label === closestLabelMatch;
+});
+```
+
+This is where we use it to set the active tab.
+
+```tsx
+<TabMenu
+  labels={localizedTabs.map(({ label }) => label)}
+  onTabChange={async (index) => {
+    await navigate(encodeURI(localizedTabs[index].slug));
+  }}
+  sx={{
+    'borderColor': 'background',
+    'display': ['none', 'block'],
+    'maxWidth': 825,
+    ' button': {
+      textTransform: 'capitalize',
+    },
+  }}
+  // active tab [1, 2, 3, 4, etc.]
+  tab={activeTab}
+  tabColor="text"
+  tabHeight={4}
+/>
+```
+
+This works great for strings made up of latin characters like French, & Italian. But, we also have Japanese, Korean, & 2 variations of Chinese to account for.
+I had to update the formattedLabel because the regular expression being used to format the label was causing the non-Latin characters, such as the Japanese characters in "入場のご案内" to be blank.
+
+The regular expression in question, `/[^\w-]+/g`, matches any characters that are not word characters or hyphens and replaces them with an empty string. This did work for Latin characters, but did not work for non-Latin characters. Instead of using this regular expression, I modified the existing regular expression to allow for non-Latin characters.
+I used the Unicode character property `\p{L}` to match any Unicode letter character, which will match all letters from all scripts, including non-Latin scripts. Here's the updated regular expression that I used to allow for non-Latin characters:
+```ts
+const formattedLabel = tab.label
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\p{L}\d-]+/gu, '');
+```
+
+This regular expression matches any characters that are not Unicode letter, digit, or hyphen characters, and replaces them with an empty string. The u flag at the end of the regular expression tells JavaScript to treat the regular expression as a Unicode regular expression. This regular expression should work for non-Latin characters, including Japanese characters.
+
+In conclusion, the Levenshtein algorithm is a powerful tool for measuring the similarity between two strings. With this tool in your utility belt, you have a small but mighty addition that can make a big impact on your project. We can usually compare two strings for an exact match. But, in the rare case where you have to find the best match, & literally millions of dollars are on the line, thank goodness for math! Thank goodness for Levenshtein!
+
+
+
+
