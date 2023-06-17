@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { useEffect, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil';
 import { Canvas, useFrame } from '@react-three/fiber'
-import { useCursor, MeshReflectorMaterial, Image, Text, Environment } from '@react-three/drei'
+import { useCursor, Image } from '@react-three/drei'
 import { useRoute, useLocation } from 'wouter'
 import { easing } from 'maath'
 import getUuid from 'uuid-by-string'
@@ -22,7 +22,6 @@ export function Slider({ images }) {
       <group position={[0, -0.5, 1]}>
         <Frames images={images} />
       </group>
-      <Environment preset="city" />
     </Canvas>
   )
 }
