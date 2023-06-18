@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Head from 'next/head'
 import Link from 'next/link'
-import { useRecoilState } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import clsx from 'clsx'
 
 import { Button } from '@/components/Button'
@@ -238,7 +238,7 @@ const images = [
 
 export default function Home({ articles }) {
   // SLIDER STATE
-  const [active, setSliderState] = useRecoilState(sliderActiveState);
+  const active = useRecoilValue(sliderActiveState);
 
   return (
     <>

@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { useEffect, useRef, useState } from 'react'
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useCursor, Image } from '@react-three/drei'
 import { useRoute, useLocation } from 'wouter'
@@ -11,10 +11,7 @@ import { sliderActiveState } from '../state/slider-active';
 const GOLDENRATIO = 1.15
 
 export function Slider({ images }) {
-  const [active, setSliderState] = useRecoilState(sliderActiveState);
-
-  // I think the dynamic height here is causing a glitch
-  // I think I need to recalculate the canvas height & relation to the r3f scaling
+  const active = useRecoilValue(sliderActiveState);
 
   return (
     <Canvas style={{height: active ? '800px' : '500px', margin: '0 auto'}} dpr={[1, 1.5]} background={'transparent'} camera={{ fov: 70, position: [0, 2, 15] }}>
