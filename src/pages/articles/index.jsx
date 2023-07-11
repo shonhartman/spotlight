@@ -43,6 +43,8 @@ export default function ArticlesIndex({ articles }) {
           name="description"
           content="Long-form thoughts on programming, leadership, product design, and more, collected in chronological order."
         />
+        <meta name="og:title" content="Shaun Hartman | Articles" />
+        <meta name="og:image" content="/shaun-portrait.jpg" />
       </Head>
       <SimpleLayout
         title="Writing on software, music, equality, health, and longevity."

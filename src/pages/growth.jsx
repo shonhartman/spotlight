@@ -32,8 +32,10 @@ export default function Uses() {
         <title>Growth - Shaun Hartman</title>
         <meta
           name="description"
-          content="It's important to keep growing as a person. But, it is also important to contribute to the growth of humanity as well."
+          content="It's important to keep growing as a person. But, it is also important to contribute to the growth of humanity."
         />
+      <meta name="og:title" content="Shaun Hartman | Growth" />
+      <meta name="og:image" content="/shaun-portrait.jpg" />
       </Head>
       <SimpleLayout
         title="Personal growth is essential. But, contributing to the growth of humanity is of paramount importance."

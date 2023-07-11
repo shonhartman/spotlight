@@ -33,8 +33,10 @@ export default function Speaking() {
         <title>Performance - Shaun Hartman</title>
         <meta
           name="description"
-          content="I’ve spoken at events all around the world and been interviewed for many podcasts."
+          content="Shaun Hartman's captivating experience in performance creates a unique blend of artistry and entertainment."
         />
+        <meta name="og:title" content="Shaun Hartman | Performance" />
+        <meta name="og:image" content="/shaun-portrait.jpg" />
       </Head>
       <SimpleLayout
         title="I’ve performed in Chicago, Toronto, Detroit, San Francisco, Austin, Dallas, Memphis, & Little Rock to name a few... plenty of smaller towns too!"

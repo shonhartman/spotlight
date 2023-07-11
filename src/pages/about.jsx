@@ -45,6 +45,8 @@ export default function About() {
           name="description"
           content="I’m Shaun Hartman. I live in Little Rock, where I build the future for Big Human clients."
         />
+        <meta name="og:title" content="Shaun Hartman | About" />
+        <meta name="og:image" content="/shaun-portrait.jpg" />
       </Head>
       <Container className="mt-16 sm:mt-32">
         <div className="grid grid-cols-1 gap-y-16 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-y-12">

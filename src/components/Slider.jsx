@@ -12,10 +12,42 @@ const GOLDENRATIO = 1.15
 
 export function Slider({ images }) {
   const active = useRecoilValue(sliderActiveState);
+  const [isMobile, setIsMobile] = useState(false);
+
+  const handleResize = () => {
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    if (screenWidth <= 375) {
+      setIsMobile(true);
+    }
+  };
+
+  useEffect(() => {
+    // Call handleResize on component mount
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  function calculateCanvasHeight(isMobile, active) {
+    if (isMobile) {
+      return active ? '300px' : '200px'
+    } else {
+      return active ? '800px' : '500px'
+    }
+  }
+
+  const canvasHeight = calculateCanvasHeight(isMobile, active);
 
   return (
-    <Canvas style={{height: active ? '800px' : '500px', margin: '0 auto'}} dpr={[1, 1.5]} background={'transparent'} camera={{ fov: 70, position: [0, 2, 15] }}>
-      <fog attach="fog" args={['#191920', 0, 15]} />
+    <Canvas style={{height: canvasHeight, margin: '0 auto'}} dpr={[1, 1.5]} background={'transparent'} camera={{ fov: 70, position: [0, 2, 15] }}>
+      {/* <fog attach="fog" args={['#191920', 0, 15]} /> */}
       <group position={[0, -0.5, 1]}>
         <Frames images={images} />
       </group>
@@ -28,6 +60,7 @@ function Frames({ images, q = new THREE.Quaternion(), p = new THREE.Vector3() })
   const clicked = useRef()
   const [, params] = useRoute('/item/:id')
   const [location, setLocation] = useLocation()
+
   useEffect(() => {
     if(location === '/') {
       setSliderState(false)
@@ -44,10 +77,12 @@ function Frames({ images, q = new THREE.Quaternion(), p = new THREE.Vector3() })
       q.identity()
     }
   })
+
   useFrame((state, dt) => {
     easing.damp3(state.camera.position, p, 0.3, dt)
     easing.dampQ(state.camera.quaternion, q, 0.3, dt)
   })
+  
   // SLIDER STATE
   const [active, setSliderState] = useRecoilState(sliderActiveState);
 
@@ -70,12 +105,14 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
   const [rnd] = useState(() => Math.random())
   const name = getUuid(url)
   const isActive = params?.id === name
+
   useCursor(hovered)
   useFrame((state, dt) => {
     image.current.material.zoom = 2 + Math.sin(rnd * 10000 + state.clock.elapsedTime / 30) / 2
     easing.damp3(image.current.scale, [0.87 * (!isActive && hovered ? 0.97 : 1), 0.9 * (!isActive && hovered ? 0.97 : 1), 1], 0.1, dt)
     easing.dampC(frame.current.material.color, hovered ? 'hotpink' : '#a855f7', 0.1, dt)
   })
+
   return (
     <group {...props}>
       <mesh
