@@ -53,7 +53,7 @@ export default function Home({ articles }) {
       <Container className={clsx('mt-9', {'relative': active})}>
         <div className={clsx('max-w-2xl', {'absolute': active})}>
           <h1 className="text-4xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 sm:text-5xl">
-          Shaun Hartman - Digital Creator
+          Shaun Hartman - Creator
           </h1>
           <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">
             I’m Shaun, a software engineer at Big Human and a life long creator.<br></br>
