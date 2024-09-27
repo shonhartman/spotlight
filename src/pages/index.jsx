@@ -21,13 +21,13 @@ import Resume from '@/components/Resume';
 // SLIDER DATA
 const images = [
   // Front
-  { position: [0, 0, 2.95], rotation: [0, 0, 0], url: '/rocking.png' },
+  { position: [0, 0, 2.95], rotation: [0, 0, 0], url: '/shon_BW.png' },
   // Left
-  { position: [-1.35, 0, 2.8], rotation: [0, 0, -0.01], url: '/cooking.png' },
-  { position: [-2.45, 0, 3], rotation: [0, 0, -0.02], url: '/onewheel.png' },
+  { position: [-1.35, 0, 2.8], rotation: [0, 0, -0.01], url: '/riding.png' },
+  { position: [-2.45, 0, 3], rotation: [0, 0, -0.02], url: '/sun_studio_close.png' },
   // Right
-  { position: [1.4, 0, 2.75], rotation: [0, -0, -0.01], url: '/coding.png' },
-  { position: [2.5, 0, 3], rotation: [0, -0, 0.01], url: '/yoga_class.png' }
+  { position: [1.4, 0, 2.75], rotation: [0, -0, -0.01], url: '/tux_pattern.png' },
+  { position: [2.5, 0, 3], rotation: [0, -0, 0.01], url: '/outside_sun_studios.png' }
 ]
 
 
@@ -45,7 +45,7 @@ export default function Home({ articles }) {
           name="description"
           content="I’m Shaun, a software engineer at Big Human most of the time. When I'm not creating for clients, I'm creating for the world & enjoying my family."
         />
-      <meta name="og:title" content="Shaun Hartman | Digital Creator" />
+      <meta name="og:title" content="Shaun Hartman | Creator" />
       <meta name="og:image" content="/shaun-portrait.jpg" />
 
       </Head>
@@ -57,8 +57,8 @@ export default function Home({ articles }) {
           </h1>
           <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">
             I’m Shaun, a software engineer at Big Human and a life long creator.<br></br>
-            I like to rock. Whether on a stage, developing software, or teaching Yoga. Count me in for 100%. 
-            Everything is enhanced by the digital. So, maybe I can truly say 110% & beyond.
+            I like to rock. Whether on a stage, developing software, acting, or teaching Yoga. Count me in for 100%. 
+            Technology has allowed me to expand indefinitely. So, maybe I can truly say 110% & beyond.
             I try to teach whenever called upon & learn whenever fortunate.
           </p>
           {/* SOCIAL LINKS */}
