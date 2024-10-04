@@ -16,7 +16,6 @@ export function Slider({ images }) {
 
   const handleResize = () => {
     const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
 
     if (screenWidth <= 375) {
       setIsMobile(true);

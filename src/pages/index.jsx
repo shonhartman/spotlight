@@ -1,6 +1,7 @@
 import Head from 'next/head'
 import { useRecoilValue } from 'recoil';
 import clsx from 'clsx'
+import { useState, useEffect } from 'react'
 
 import { Container } from '@/components/Container'
 import {
@@ -30,10 +31,27 @@ const images = [
   { position: [2.5, 0, 3], rotation: [0, -0, 0.01], url: '/outside_sun_studios.png' }
 ]
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkIsMobile()
+    window.addEventListener('resize', checkIsMobile)
+
+    return () => window.removeEventListener('resize', checkIsMobile)
+  }, [])
+
+  return isMobile
+}
 
 export default function Home({ articles }) {
   // SLIDER STATE
   const active = useRecoilValue(sliderActiveState);
+  const isMobile = useIsMobile()
 
   return (
     <>
@@ -82,7 +100,12 @@ export default function Home({ articles }) {
         </div>
       </Container>
       {/* 3D SLIDER */}
-      <div className={clsx('', {'relative': active, 'z-10': active, 'h-[2000px]': active})}>
+      <div className={clsx('', {
+        'relative': active,
+        'z-10': active,
+        'h-[2000px]': active,
+        'top-[375px]': active && isMobile
+      })}>
         <Slider images={images} />
       </div>
       {/* BELOW THE FOLD */}
