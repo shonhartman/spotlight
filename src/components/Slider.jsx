@@ -1,9 +1,8 @@
 import * as THREE from 'three'
 import { useEffect, useRef, useState } from 'react'
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useCursor, Image } from '@react-three/drei'
-import { useRoute, useLocation } from 'wouter'
 import { easing } from 'maath'
 import getUuid from 'uuid-by-string'
 import { sliderActiveState } from '../state/slider-active';
@@ -12,10 +11,10 @@ const GOLDENRATIO = 1.15
 
 export function Slider({ images }) {
   const [active, setActive] = useRecoilState(sliderActiveState);
-  const [, setLocation] = useLocation();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
   const [touchStartX, setTouchStartX] = useState(null);
+  const [touchStartY, setTouchStartY] = useState(null);
   const canvasRef = useRef(null);
 
   const handleResize = () => {
@@ -40,119 +39,154 @@ export function Slider({ images }) {
 
   const handleTouchStart = (e) => {
     setTouchStartX(e.touches[0].clientX);
+    setTouchStartY(e.touches[0].clientY);
   };
 
   const handleTouchEnd = (e) => {
-    if (touchStartX === null) return;
+    if (touchStartX === null || touchStartY === null) return;
 
     const touchEndX = e.changedTouches[0].clientX;
-    const diff = touchStartX - touchEndX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaX = (touchStartX - touchEndX) * 100;
+    const deltaY = (touchStartY - touchEndY) * 100;
 
-    if (Math.abs(diff) > 50) { // Minimum swipe distance
-      if (diff > 0) {
-        // Swipe left
-        navigateToNextImage(1);
-      } else {
-        // Swipe right
-        navigateToNextImage(-1);
+    // Minimum swipe distance (adjust this value to change sensitivity)
+    const minSwipeDistance = 50;
+
+    // Check if the swipe is more horizontal than vertical
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (Math.abs(deltaX) > minSwipeDistance) {
+        if (deltaX > 0) {
+          // Swipe left
+          navigateToNextImage(1);
+        } else {
+          // Swipe right
+          navigateToNextImage(-1);
+        }
       }
     }
 
     setTouchStartX(null);
+    setTouchStartY(null);
   };
 
   const navigateToNextImage = (direction) => {
     const newIndex = (currentIndex + direction + images.length) % images.length;
     setCurrentIndex(newIndex);
-    setLocation(`/item/${getUuid(images[newIndex].url)}`);
     setActive(true);
   };
 
   function calculateCanvasHeight(isMobile, active) {
     if (isMobile) {
-      return active ? '300px' : '200px'
+      return active ? '1200px' : '200px'
     } else {
       return active ? '800px' : '500px'
     }
   }
 
-  const canvasHeight = calculateCanvasHeight(isMobile, active);
+  const resetSlider = () => {
+    setCurrentIndex(-1);
+    setActive(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (canvasRef.current && !canvasRef.current.contains(event.target)) {
+        resetSlider();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
-    <Canvas 
+    <div 
       ref={canvasRef}
-      style={{height: canvasHeight, margin: '0 auto'}} 
+      className={`
+        ${calculateCanvasHeight(isMobile, active)}
+        mx-auto
+        relative
+        z-10
+      `}
+    >
+      <Canvas 
+        style={{
+        height: calculateCanvasHeight(isMobile, active),
+      }} 
       dpr={[1, 1.5]} 
-      background={'transparent'} 
       camera={{ fov: 70, position: [0, 2, 15] }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* <fog attach="fog" args={['#191920', 0, 15]} /> */}
       <group position={[0, -0.5, 1]}>
-        <Frames images={images} />
+        <Frames isMobile={isMobile} images={images} currentIndex={currentIndex} setCurrentIndex={setCurrentIndex} />
       </group>
     </Canvas>
+    </div>
+
+
   )
 }
 
-function Frames({ images, q = new THREE.Quaternion(), p = new THREE.Vector3() }) {
+function Frames({ isMobile, images, currentIndex, setCurrentIndex, q = new THREE.Quaternion(), p = new THREE.Vector3() }) {
   const ref = useRef()
   const clicked = useRef()
-  const [, params] = useRoute('/item/:id')
-  const [location, setLocation] = useLocation()
+  const [, setSliderState] = useRecoilState(sliderActiveState);
 
   useEffect(() => {
-    // Check the current route and update the slider state accordingly
-    if (location === '/') {
-      // If we're not viewing a specific image, set the slider to inactive
-      setSliderState(false)
+    if (currentIndex >= 0 && currentIndex < images.length) {
+      clicked.current = ref.current.getObjectByName(getUuid(images[currentIndex].url))
+
+      console.log({isMobile});
+      
+
+      if (clicked.current) {
+        console.log({clicked});
+        clicked.current.parent.updateWorldMatrix(true, true)
+        isMobile ? clicked.current.parent.localToWorld(p.set(0, 0.001, 3.15)) : clicked.current.parent.localToWorld(p.set(0, GOLDENRATIO / 2, 1.25))
+        clicked.current.parent.getWorldQuaternion(q)
+      } else {
+        console.log('else');
+        
+        p.set(0, 0, 5.5)
+        q.identity()
+      }
     } else {
-      // If we're viewing a specific image, set the slider to active
-      setSliderState(true)
-    }
-
-    // Find the object in our 3D scene that matches the current route parameter
-    clicked.current = ref.current.getObjectByName(params?.id)
-
-    if (clicked.current) {
-      // If we found a matching object (i.e., we're viewing a specific image)
-
-      // Update the world matrix of the parent object
-      // This ensures all world positions and rotations are up to date
-      clicked.current.parent.updateWorldMatrix(true, true)
-
-      // Calculate the new camera position
-      // We use localToWorld to convert from the object's local space to world space
-      // The position is set slightly above and in front of the object (using GOLDENRATIO)
-      clicked.current.parent.localToWorld(p.set(0, GOLDENRATIO / 2, 1.25))
-
-      // Set the camera's rotation to match the parent object's rotation
-      clicked.current.parent.getWorldQuaternion(q)
-    } else {
-      // If we didn't find a matching object (i.e., we're on the home view)
-      // Reset the camera position to a default value
-      // This positions the camera to view all frames
+      // Reset camera position when no image is selected
       p.set(0, 0, 5.5)
-
-      // Reset the camera rotation to its default (no rotation)
       q.identity()
+      clicked.current = null
     }
-  })
+  }, [currentIndex, images])
 
   useFrame((state, dt) => {
     easing.damp3(state.camera.position, p, 0.3, dt)
     easing.dampQ(state.camera.quaternion, q, 0.3, dt)
   })
   
-  // SLIDER STATE
-  const [active, setSliderState] = useRecoilState(sliderActiveState);
-
   return (
     <group
       ref={ref}
-      onClick={(e) => (e.stopPropagation(), setLocation(clicked.current === e.object ? '/' : '/item/' + e.object.name), setSliderState(active ? true : false))}
-      onPointerMissed={() => setLocation('/')}
+      onClick={(e) => {
+        e.stopPropagation()
+        const index = images.findIndex(img => getUuid(img.url) === e.object.name)
+        if (index !== -1) {
+          setCurrentIndex(index)
+          setSliderState(true)
+        } else {
+          // Reset the slider when clicking on empty space
+          setCurrentIndex(-1)
+          setSliderState(false)
+        }
+      }}
+      onPointerMissed={() => {
+        // Reset the slider when clicking outside the group
+        setCurrentIndex(-1)
+        setSliderState(false)
+      }}
     >
       {images.map((props) => <Frame key={props.url} {...props} /> /* prettier-ignore */)}
     </group>
@@ -162,19 +196,14 @@ function Frames({ images, q = new THREE.Quaternion(), p = new THREE.Vector3() })
 function Frame({ url, c = new THREE.Color(), ...props }) {
   const image = useRef()
   const frame = useRef()
-  const [, params] = useRoute('/item/:id')
   const [hovered, hover] = useState(false)
   const [rnd] = useState(() => Math.random())
   const name = getUuid(url)
-  const isActive = params?.id === name
 
   useCursor(hovered)
   useFrame((state, dt) => {
-    // adjusts the zoom of the image material
     image.current.material.zoom = 2 + Math.sin(rnd * 10000 + state.clock.elapsedTime / 30) / 2
-    // adjusts the scale of the image mesh
-    easing.damp3(image.current.scale, [0.87 * (!isActive && hovered ? 0.97 : 1), 0.9 * (!isActive && hovered ? 0.97 : 1), 1], 0.1, dt)
-    // adjusts the color of the frame mesh
+    easing.damp3(image.current.scale, [0.87 * (hovered ? 0.97 : 1), 0.9 * (hovered ? 0.97 : 1), 1], 0.1, dt)
     easing.dampC(frame.current.material.color, hovered ? 'hotpink' : '#a855f7', 0.1, dt)
   })
 
@@ -194,10 +223,6 @@ function Frame({ url, c = new THREE.Color(), ...props }) {
         </mesh>
         <Image raycast={() => null} ref={image} position={[0, 0, 0.7]} url={url} alt={`Image ${name}`} />
       </mesh>
-      {/* OPTIONAL PINNED TEXT */}
-      {/* <Text maxWidth={0.1} anchorX="left" anchorY="top" position={[0.65, GOLDENRATIO, 0]} fontSize={0.05}>
-        {name.split('-').join(' ')}
-      </Text> */}
     </group>
   )
 }

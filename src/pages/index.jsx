@@ -104,7 +104,6 @@ export default function Home({ articles }) {
         'relative': active,
         'z-10': active,
         'h-[2000px]': active,
-        'top-[375px]': active && isMobile
       })}>
         <Slider images={images} />
       </div>
