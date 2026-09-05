@@ -5,10 +5,6 @@ import { Section } from '@/components/Section'
 import { SimpleLayout } from '@/components/SimpleLayout'
 import { Button } from '@/components/Button'
 
-// TODO: replace with your real Formspree endpoint (formspree.io -> create a form -> copy the endpoint URL)
-// Until this is replaced, submissions will fail with a 404 from Formspree.
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/FORMSPREE_ENDPOINT_PLACEHOLDER'
-
 function ProofPoints({ children, ...props }) {
   return (
     <Section {...props}>
@@ -26,67 +22,6 @@ function ProofPoint({ title, event, children }) {
       <Card.Eyebrow decorate>{event}</Card.Eyebrow>
       <Card.Description>{children}</Card.Description>
     </Card>
-  )
-}
-
-function ConsultingForm() {
-  return (
-    <form
-      action={FORMSPREE_ENDPOINT}
-      method="POST"
-      className="rounded-2xl border border-zinc-100 p-6 dark:border-zinc-700/40"
-    >
-      <input type="hidden" name="_next" value="https://shaunhartman.com/thank-you" />
-      <input type="hidden" name="_subject" value="AI Systems Consulting inquiry" />
-      <div className="space-y-4">
-        <div>
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-zinc-800 dark:text-zinc-100"
-          >
-            Name
-          </label>
-          <input
-            type="text"
-            name="name"
-            id="name"
-            required
-            className="mt-2 block w-full appearance-none rounded-md border border-zinc-900/10 bg-white px-3 py-2 shadow-md shadow-zinc-800/5 placeholder:text-zinc-400 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-zinc-700 dark:bg-zinc-700/[0.15] dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:focus:border-purple-400 dark:focus:ring-purple-400/10 sm:text-sm"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-zinc-800 dark:text-zinc-100"
-          >
-            Email
-          </label>
-          <input
-            type="email"
-            name="email"
-            id="email"
-            required
-            className="mt-2 block w-full appearance-none rounded-md border border-zinc-900/10 bg-white px-3 py-2 shadow-md shadow-zinc-800/5 placeholder:text-zinc-400 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-zinc-700 dark:bg-zinc-700/[0.15] dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:focus:border-purple-400 dark:focus:ring-purple-400/10 sm:text-sm"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="message"
-            className="block text-sm font-medium text-zinc-800 dark:text-zinc-100"
-          >
-            What are you looking to automate?
-          </label>
-          <textarea
-            name="message"
-            id="message"
-            rows={4}
-            required
-            className="mt-2 block w-full appearance-none rounded-md border border-zinc-900/10 bg-white px-3 py-2 shadow-md shadow-zinc-800/5 placeholder:text-zinc-400 focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/10 dark:border-zinc-700 dark:bg-zinc-700/[0.15] dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:focus:border-purple-400 dark:focus:ring-purple-400/10 sm:text-sm"
-          />
-        </div>
-        <Button type="submit">Get in touch</Button>
-      </div>
-    </form>
   )
 }
 
@@ -149,7 +84,14 @@ export default function Consulting() {
             </div>
           </Section>
           <Section title="Get in touch">
-            <ConsultingForm />
+            <div className="space-y-6">
+              <p className="text-base text-zinc-600 dark:text-zinc-400">
+                Tell me what you&apos;re trying to automate.
+              </p>
+              <Button href="mailto:shaunhartman@icloud.com?subject=AI%20Systems%20Consulting%20inquiry">
+                Email me
+              </Button>
+            </div>
           </Section>
         </div>
       </SimpleLayout>
