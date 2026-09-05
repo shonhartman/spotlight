@@ -1,120 +1,70 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 
-// How far (in px) each step away from the front card pushes a card
-// sideways, and how much it tilts/scales/recedes.
-const STEP_X = 90
-const STEP_ROTATION = 32
-const STEP_SCALE = 0.14
-const STEP_Z = 60
-const BOUNCE_EASE = 'back.out(1.7)'
+// Card-shuffle fan, adapted from madewithgsap.com/effects/tutorial003
+// without ScrollTrigger. Each `.arm` is a spoke pivoting around its own
+// bottom edge, which sits at the container's vertical center — rotating
+// it swings the card at its tip through a shallow arc. The deal-in slides
+// each card up into its slot once on mount instead of being scrubbed by
+// scroll.
+const ANGLE_STEP = 15 // degrees between each card's resting rotation
+const RADIUS = 230 // px, spoke length — controls horizontal fan spread
+const DEAL_STAGGER = 0.09 // seconds between each card's entrance
+const DEAL_EASE = 'back.out(1.3)'
+const HOVER_EASE = 'power2.out'
 
 export function Slider({ images }) {
-  const containerRef = useRef(null)
+  const armRefs = useRef([])
   const cardRefs = useRef([])
-  const [isMobile, setIsMobile] = useState(false)
-  const [mobileIndex, setMobileIndex] = useState(0)
-  const activePosition = useRef((images.length - 1) / 2)
-  const touchStartX = useRef(null)
-  const touchStartY = useRef(null)
 
   useEffect(() => {
-    const checkIsMobile = () => setIsMobile(window.innerWidth < 768)
-    checkIsMobile()
-    window.addEventListener('resize', checkIsMobile)
-    return () => window.removeEventListener('resize', checkIsMobile)
-  }, [])
+    const n = images.length
+    const halfRange = ((n - 1) * ANGLE_STEP) / 2
 
-  const applyPositions = (position) => {
-    activePosition.current = position
-    cardRefs.current.forEach((card, i) => {
-      if (!card) return
-      const offset = i - position
-      gsap.to(card, {
-        x: offset * STEP_X,
-        z: -Math.abs(offset) * STEP_Z,
-        rotateY: gsap.utils.clamp(-70, 70, offset * -STEP_ROTATION),
-        scale: gsap.utils.clamp(0.55, 1, 1 - Math.abs(offset) * STEP_SCALE),
-        zIndex: Math.round(100 - Math.abs(offset) * 10),
-        duration: 0.6,
-        ease: BOUNCE_EASE,
-        overwrite: 'auto',
-      })
+    const tl = gsap.timeline()
+    armRefs.current.forEach((arm, i) => {
+      const rot = -halfRange + i * ANGLE_STEP
+      const card = cardRefs.current[i]
+      tl.fromTo(arm, { rotation: 0 }, { rotation: rot, duration: 0.9, ease: DEAL_EASE }, i * DEAL_STAGGER)
+      tl.fromTo(card, { y: 130 }, { y: 0, duration: 0.9, ease: DEAL_EASE }, i * DEAL_STAGGER)
     })
-  }
 
-  useEffect(() => {
-    applyPositions(isMobile ? mobileIndex : (images.length - 1) / 2)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => tl.kill()
   }, [images.length])
 
-  useEffect(() => {
-    if (isMobile) applyPositions(mobileIndex)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobile, mobileIndex])
-
-  const handleMouseMove = (e) => {
-    if (isMobile) return
-    const rect = containerRef.current.getBoundingClientRect()
-    const ratio = gsap.utils.clamp(0, 1, (e.clientX - rect.left) / rect.width)
-    applyPositions(ratio * (images.length - 1))
+  const handleEnter = (i) => {
+    gsap.to(cardRefs.current[i], { y: -28, scale: 1.08, duration: 0.35, ease: HOVER_EASE, zIndex: 50, overwrite: 'auto' })
   }
 
-  const handleMouseLeave = () => {
-    if (isMobile) return
-    applyPositions((images.length - 1) / 2)
-  }
-
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX
-    touchStartY.current = e.touches[0].clientY
-  }
-
-  const handleTouchEnd = (e) => {
-    if (touchStartX.current === null || touchStartY.current === null) return
-
-    const deltaX = touchStartX.current - e.changedTouches[0].clientX
-    const deltaY = touchStartY.current - e.changedTouches[0].clientY
-    const minSwipeDistance = 50
-
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
-      const direction = deltaX > 0 ? 1 : -1
-      setMobileIndex((current) => (current + direction + images.length) % images.length)
-    }
-
-    touchStartX.current = null
-    touchStartY.current = null
+  const handleLeave = (i) => {
+    gsap.to(cardRefs.current[i], { y: 0, scale: 1, duration: 0.35, ease: HOVER_EASE, zIndex: 10 + i, overwrite: 'auto' })
   }
 
   return (
-    <section
-      ref={containerRef}
-      className="relative z-10 mx-auto h-[320px] sm:h-[420px]"
-      style={{ perspective: '1200px' }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div className="container relative mx-auto flex h-full w-full items-center justify-center" style={{ transformStyle: 'preserve-3d' }}>
-        {images.map((image, i) => (
+    <section className="relative z-10 h-[300px] w-full overflow-hidden sm:h-[420px]">
+      {images.map((image, i) => (
+        <div
+          key={image.url}
+          ref={(el) => (armRefs.current[i] = el)}
+          className="absolute left-1/2 origin-bottom"
+          style={{ bottom: '18%', width: 1, height: RADIUS }}
+        >
           <div
-            key={image.url}
             ref={(el) => (cardRefs.current[i] = el)}
-            className="card absolute h-[85%] w-[45%] max-w-[280px] sm:w-[30%]"
-            style={{ transformStyle: 'preserve-3d' }}
+            className="absolute left-1/2 top-0 h-40 w-28 -translate-x-1/2 cursor-pointer overflow-hidden rounded-lg shadow-xl sm:h-56 sm:w-40"
+            style={{ zIndex: 10 + i }}
+            onMouseEnter={() => handleEnter(i)}
+            onMouseLeave={() => handleLeave(i)}
           >
-            <div className="content h-full w-full overflow-hidden rounded-lg shadow-2xl">
-              <img
-                src={image.url}
-                alt={`Slide ${i + 1}`}
-                className="media h-full w-full object-cover"
-                draggable={false}
-              />
-            </div>
+            <img
+              src={image.url}
+              alt={`Slide ${i + 1}`}
+              className="h-full w-full object-cover"
+              draggable={false}
+            />
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </section>
   )
 }
