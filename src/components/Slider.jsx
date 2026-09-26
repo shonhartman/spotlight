@@ -1,165 +1,98 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
-// Card-shuffle fan, adapted from madewithgsap.com/effects/tutorial003
-// without ScrollTrigger. Each `.arm` is a spoke pivoting around its own
-// bottom edge, which sits at the container's vertical center — rotating
-// it swings the card at its tip through a shallow arc. The deal-in slides
-// each card up into its slot once on mount instead of being scrubbed by
-// scroll. Clicking a card straightens its arm to the front and pops it
-// into a larger "detail" view; clicking it again (or the backdrop) sends
-// it back into the fan.
-const ANGLE_STEP = 28 // degrees between each card's resting rotation
-const RADIUS = 270 // px, spoke length — controls horizontal fan spread
-const DEAL_STAGGER = 0.09 // seconds between each card's entrance
-const DEAL_EASE = 'back.out(1.05)'
-const HOVER_EASE = 'power2.out'
-const DETAIL_EASE = 'back.out(0.08)'
-const DETAIL_SCALE = 1.45
+// Adapted from madewithgsap.com/effects/tutorial003 (Spotify-data cards on
+// giant rotating circles). Each image sits atop its own huge circle;
+// scrolling through the pinned section scrubs each circle's rotation in
+// turn, swinging its card up into a fanned resting position. No click/hover
+// state to manage — ScrollTrigger's scrub owns the motion entirely, in
+// both scroll directions, which is what actually avoids the "card can't
+// just teleport to the front" problem instead of hand-tuning z-index
+// timing against it.
+const PIN_HEIGHT_VH = 250 // total scroll distance the section occupies
+const ANGLE_STEP = 4 // degrees between each card's resting rotation — small, because the circle's radius (huge) does the real work of spreading them out
+const CARD_WIDTH_VW = 30
 
 export function Slider({ images }) {
-  const armRefs = useRef([])
+  const pinHeightRef = useRef(null)
+  const containerRef = useRef(null)
+  const circlesRef = useRef(null)
+  const circleRefs = useRef([])
   const cardRefs = useRef([])
-  const restRotations = useRef([])
-  const [activeIndex, setActiveIndex] = useState(null)
 
   useEffect(() => {
-    const n = images.length
-    const halfRange = ((n - 1) * ANGLE_STEP) / 2
+    gsap.registerPlugin(ScrollTrigger)
 
-    const tl = gsap.timeline()
-    armRefs.current.forEach((arm, i) => {
-      const rot = -halfRange + i * ANGLE_STEP
-      restRotations.current[i] = rot
-      const card = cardRefs.current[i]
-      tl.fromTo(arm, { rotation: 0 }, { rotation: rot, duration: 0.9, ease: DEAL_EASE }, i * DEAL_STAGGER)
-      tl.fromTo(card, { y: 70 }, { y: 0, duration: 0.9, ease: DEAL_EASE }, i * DEAL_STAGGER)
+    const ctx = gsap.context(() => {
+      const pinHeight = pinHeightRef.current
+      const n = images.length
+      const halfRange = ((n - 1) * ANGLE_STEP) / 2
+      let rot = -halfRange
+      const distPerCard = (pinHeight.offsetHeight - window.innerHeight) / n
+
+      circleRefs.current.forEach((circle, i) => {
+        const scrollTrigger = {
+          trigger: pinHeight,
+          start: `top top-=${distPerCard * i}`,
+          end: `+=${distPerCard}`,
+          scrub: true,
+        }
+        gsap.to(circle, { rotation: rot, ease: 'power1.out', scrollTrigger })
+        gsap.to(cardRefs.current[i], { rotation: rot, y: '-50%', ease: 'power1.out', scrollTrigger })
+        rot += ANGLE_STEP
+      })
+
+      gsap.fromTo(
+        circlesRef.current,
+        { y: '5%' },
+        {
+          y: '-5%',
+          ease: 'none',
+          scrollTrigger: {
+            trigger: pinHeight,
+            start: 'top top',
+            end: 'bottom bottom',
+            pin: containerRef.current,
+            scrub: true,
+          },
+        },
+      )
     })
 
-    return () => tl.kill()
+    return () => ctx.revert()
   }, [images.length])
 
-  const settleCard = (i) => {
-    gsap.to(cardRefs.current[i], {
-      scale: 1,
-      y: 0,
-      opacity: 1,
-      zIndex: 10 + i,
-      duration: 0.5,
-      ease: HOVER_EASE,
-      overwrite: 'auto',
-    })
-    gsap.to(armRefs.current[i], {
-      rotation: restRotations.current[i],
-      duration: 0.6,
-      ease: DETAIL_EASE,
-      overwrite: 'auto',
-    })
-  }
-
-  const bringToFront = (i) => {
-    const arm = armRefs.current[i]
-    const card = cardRefs.current[i]
-    const rest = restRotations.current[i]
-    const pullDir = rest === 0 ? 1 : Math.sign(rest)
-
-    gsap.set(card, { zIndex: 200 })
-
-    // One continuous tween per element, moving through checkpoints, rather
-    // than two separate tweens handing off mid-flight — that handoff was
-    // fighting itself for control of the same properties each frame, which
-    // read as a robotic jump. Keyframes interpolate smoothly through the
-    // anticipation dip (freeing the card from its neighbors) into the
-    // settle (swinging flat, front and center) as a single motion.
-    gsap.to(arm, {
-      duration: 0.85,
-      keyframes: {
-        '0%': {},
-        '35%': { rotation: rest + pullDir * 3, ease: 'sine.inOut' },
-        '100%': { rotation: 0, ease: DETAIL_EASE },
-      },
-      overwrite: 'auto',
-    })
-    gsap.to(card, {
-      duration: 0.85,
-      keyframes: {
-        '0%': {},
-        '35%': { y: -20, scale: DETAIL_SCALE * 0.96, rotation: -pullDir * 2, ease: 'sine.inOut' },
-        '100%': { y: -10, scale: DETAIL_SCALE, rotation: 0, opacity: 1, ease: DETAIL_EASE },
-      },
-      overwrite: 'auto',
-    })
-  }
-
-  const closeActive = () => {
-    if (activeIndex === null) return
-    images.forEach((_, j) => settleCard(j))
-    setActiveIndex(null)
-  }
-
-  const handleCardClick = (i) => {
-    if (activeIndex === i) {
-      closeActive()
-      return
-    }
-    if (activeIndex !== null) settleCard(activeIndex)
-    bringToFront(i)
-    setActiveIndex(i)
-  }
-
-  useEffect(() => {
-    if (activeIndex === null) return
-    const onKeyDown = (e) => e.key === 'Escape' && closeActive()
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeIndex])
-
-  const handleEnter = (i) => {
-    if (activeIndex !== null) return
-    gsap.to(cardRefs.current[i], { y: -14, scale: 1.04, duration: 0.35, ease: HOVER_EASE, zIndex: 50, overwrite: 'auto' })
-  }
-
-  const handleLeave = (i) => {
-    if (activeIndex !== null) return
-    gsap.to(cardRefs.current[i], { y: 0, scale: 1, duration: 0.35, ease: HOVER_EASE, zIndex: 10 + i, overwrite: 'auto' })
-  }
-
   return (
-    <section className="relative z-10 h-[300px] w-full overflow-visible sm:h-[420px]">
-      <div
-        className="absolute inset-0 z-[150] backdrop-blur-[1px] transition-opacity duration-300"
-        style={{
-          opacity: activeIndex === null ? 0 : 1,
-          pointerEvents: activeIndex === null ? 'none' : 'auto',
-        }}
-        onClick={closeActive}
-        aria-hidden={activeIndex === null}
-      />
-      {images.map((image, i) => (
-        <div
-          key={image.url}
-          ref={(el) => (armRefs.current[i] = el)}
-          className="absolute left-1/2 origin-bottom"
-          style={{ bottom: '30%', width: 1, height: RADIUS, zIndex: activeIndex === i ? 300 : 10 + i }}
-        >
-          <div
-            ref={(el) => (cardRefs.current[i] = el)}
-            className="absolute left-1/2 top-0 h-40 w-28 -translate-x-1/2 cursor-pointer overflow-hidden rounded-lg shadow-xl sm:h-56 sm:w-40"
-            style={{ zIndex: 10 + i }}
-            onMouseEnter={() => handleEnter(i)}
-            onMouseLeave={() => handleLeave(i)}
-            onClick={() => handleCardClick(i)}
-          >
-            <img
-              src={image.url}
-              alt={`Slide ${i + 1}`}
-              className="h-full w-full object-cover"
-              draggable={false}
-            />
+    <section className="relative overflow-hidden">
+      <div ref={pinHeightRef} style={{ height: `${PIN_HEIGHT_VH}vh` }}>
+        <div ref={containerRef} className="relative h-screen">
+          <div ref={circlesRef} className="absolute inset-0">
+            {images.map((image, i) => (
+              <div
+                key={image.url}
+                ref={(el) => (circleRefs.current[i] = el)}
+                className="absolute left-1/2 top-1/2 rounded-full"
+                style={{ width: '250vw', height: '250vw', transform: 'translate(-50%, 0)', willChange: 'transform' }}
+              >
+                <img
+                  ref={(el) => (cardRefs.current[i] = el)}
+                  src={image.url}
+                  alt={`Slide ${i + 1}`}
+                  className="absolute left-1/2 top-0 rounded-lg object-cover shadow-xl"
+                  style={{
+                    width: `${CARD_WIDTH_VW}vw`,
+                    aspectRatio: 0.75,
+                    transform: 'translate(-50%, 55vh)',
+                    willChange: 'transform',
+                  }}
+                  draggable={false}
+                />
+              </div>
+            ))}
           </div>
         </div>
-      ))}
+      </div>
     </section>
   )
 }
