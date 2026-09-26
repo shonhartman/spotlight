@@ -14,7 +14,7 @@ const RADIUS = 270 // px, spoke length — controls horizontal fan spread
 const DEAL_STAGGER = 0.09 // seconds between each card's entrance
 const DEAL_EASE = 'back.out(1.05)'
 const HOVER_EASE = 'power2.out'
-const DETAIL_EASE = 'back.out(0.26)'
+const DETAIL_EASE = 'back.out(0.08)'
 const DETAIL_SCALE = 1.45
 
 export function Slider({ images }) {
@@ -58,19 +58,35 @@ export function Slider({ images }) {
   }
 
   const bringToFront = (i) => {
-    gsap.to(cardRefs.current[i], {
-      scale: DETAIL_SCALE,
-      y: -10,
-      opacity: 1,
-      zIndex: 200,
-      duration: 0.6,
-      ease: DETAIL_EASE,
+    const arm = armRefs.current[i]
+    const card = cardRefs.current[i]
+    const rest = restRotations.current[i]
+    const pullDir = rest === 0 ? 1 : Math.sign(rest)
+
+    gsap.set(card, { zIndex: 200 })
+
+    // One continuous tween per element, moving through checkpoints, rather
+    // than two separate tweens handing off mid-flight — that handoff was
+    // fighting itself for control of the same properties each frame, which
+    // read as a robotic jump. Keyframes interpolate smoothly through the
+    // anticipation dip (freeing the card from its neighbors) into the
+    // settle (swinging flat, front and center) as a single motion.
+    gsap.to(arm, {
+      duration: 0.85,
+      keyframes: {
+        '0%': {},
+        '35%': { rotation: rest + pullDir * 3, ease: 'sine.inOut' },
+        '100%': { rotation: 0, ease: DETAIL_EASE },
+      },
       overwrite: 'auto',
     })
-    gsap.to(armRefs.current[i], {
-      rotation: 0,
-      duration: 0.6,
-      ease: DETAIL_EASE,
+    gsap.to(card, {
+      duration: 0.85,
+      keyframes: {
+        '0%': {},
+        '35%': { y: -20, scale: DETAIL_SCALE * 0.96, rotation: -pullDir * 2, ease: 'sine.inOut' },
+        '100%': { y: -10, scale: DETAIL_SCALE, rotation: 0, opacity: 1, ease: DETAIL_EASE },
+      },
       overwrite: 'auto',
     })
   }
