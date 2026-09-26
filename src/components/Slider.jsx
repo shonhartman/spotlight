@@ -112,7 +112,7 @@ export function Slider({ images }) {
   return (
     <section className="relative z-10 h-[300px] w-full overflow-visible sm:h-[420px]">
       <div
-        className="absolute inset-0 z-[150] backdrop-blur-sm transition-opacity duration-300"
+        className="absolute inset-0 z-[150] backdrop-blur-[1px] transition-opacity duration-300"
         style={{
           opacity: activeIndex === null ? 0 : 1,
           pointerEvents: activeIndex === null ? 'none' : 'auto',
