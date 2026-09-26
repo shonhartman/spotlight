@@ -12,10 +12,10 @@ import gsap from 'gsap'
 const ANGLE_STEP = 28 // degrees between each card's resting rotation
 const RADIUS = 270 // px, spoke length — controls horizontal fan spread
 const DEAL_STAGGER = 0.09 // seconds between each card's entrance
-const DEAL_EASE = 'back.out(1.3)'
+const DEAL_EASE = 'back.out(1.05)'
 const HOVER_EASE = 'power2.out'
-const DETAIL_EASE = 'back.out(1.5)'
-const DETAIL_SCALE = 1.9
+const DETAIL_EASE = 'back.out(1.05)'
+const DETAIL_SCALE = 1.45
 
 export function Slider({ images }) {
   const armRefs = useRef([])
@@ -33,7 +33,7 @@ export function Slider({ images }) {
       restRotations.current[i] = rot
       const card = cardRefs.current[i]
       tl.fromTo(arm, { rotation: 0 }, { rotation: rot, duration: 0.9, ease: DEAL_EASE }, i * DEAL_STAGGER)
-      tl.fromTo(card, { y: 130 }, { y: 0, duration: 0.9, ease: DEAL_EASE }, i * DEAL_STAGGER)
+      tl.fromTo(card, { y: 70 }, { y: 0, duration: 0.9, ease: DEAL_EASE }, i * DEAL_STAGGER)
     })
 
     return () => tl.kill()
@@ -60,7 +60,7 @@ export function Slider({ images }) {
   const bringToFront = (i) => {
     gsap.to(cardRefs.current[i], {
       scale: DETAIL_SCALE,
-      y: -20,
+      y: -10,
       opacity: 1,
       zIndex: 200,
       duration: 0.6,
@@ -72,10 +72,6 @@ export function Slider({ images }) {
       duration: 0.6,
       ease: DETAIL_EASE,
       overwrite: 'auto',
-    })
-    images.forEach((_, j) => {
-      if (j === i) return
-      gsap.to(cardRefs.current[j], { opacity: 0.45, duration: 0.4, ease: HOVER_EASE, overwrite: 'auto' })
     })
   }
 
@@ -105,7 +101,7 @@ export function Slider({ images }) {
 
   const handleEnter = (i) => {
     if (activeIndex !== null) return
-    gsap.to(cardRefs.current[i], { y: -28, scale: 1.08, duration: 0.35, ease: HOVER_EASE, zIndex: 50, overwrite: 'auto' })
+    gsap.to(cardRefs.current[i], { y: -14, scale: 1.04, duration: 0.35, ease: HOVER_EASE, zIndex: 50, overwrite: 'auto' })
   }
 
   const handleLeave = (i) => {
@@ -129,7 +125,7 @@ export function Slider({ images }) {
           key={image.url}
           ref={(el) => (armRefs.current[i] = el)}
           className="absolute left-1/2 origin-bottom"
-          style={{ bottom: '18%', width: 1, height: RADIUS, zIndex: activeIndex === i ? 300 : 10 + i }}
+          style={{ bottom: '30%', width: 1, height: RADIUS, zIndex: activeIndex === i ? 300 : 10 + i }}
         >
           <div
             ref={(el) => (cardRefs.current[i] = el)}
