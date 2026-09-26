@@ -9,8 +9,8 @@ import gsap from 'gsap'
 // scroll. Clicking a card straightens its arm to the front and pops it
 // into a larger "detail" view; clicking it again (or the backdrop) sends
 // it back into the fan.
-const ANGLE_STEP = 15 // degrees between each card's resting rotation
-const RADIUS = 230 // px, spoke length — controls horizontal fan spread
+const ANGLE_STEP = 28 // degrees between each card's resting rotation
+const RADIUS = 270 // px, spoke length — controls horizontal fan spread
 const DEAL_STAGGER = 0.09 // seconds between each card's entrance
 const DEAL_EASE = 'back.out(1.3)'
 const HOVER_EASE = 'power2.out'
