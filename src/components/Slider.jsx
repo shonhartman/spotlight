@@ -14,7 +14,7 @@ const RADIUS = 270 // px, spoke length — controls horizontal fan spread
 const DEAL_STAGGER = 0.09 // seconds between each card's entrance
 const DEAL_EASE = 'back.out(1.05)'
 const HOVER_EASE = 'power2.out'
-const DETAIL_EASE = 'back.out(1.05)'
+const DETAIL_EASE = 'back.out(0.26)'
 const DETAIL_SCALE = 1.45
 
 export function Slider({ images }) {
