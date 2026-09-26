@@ -20,9 +20,18 @@ export function Slider({ images }) {
   const circlesRef = useRef(null)
   const circleRefs = useRef([])
   const cardRefs = useRef([])
+  const indicatorRef = useRef(null)
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
+
+    // React 18 StrictMode double-invokes this effect in dev; ctx.revert()
+    // below cleans up this component's own tweens on the second pass, but
+    // ScrollTrigger's pin DOM mutations from the first pass can leave a
+    // stale trigger (and a tween permanently stuck at its start value,
+    // fighting the real one every frame) behind regardless. Killing
+    // everything up front guarantees a clean slate either way.
+    ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
 
     const ctx = gsap.context(() => {
       const pinHeight = pinHeightRef.current
@@ -58,6 +67,26 @@ export function Slider({ images }) {
           },
         },
       )
+
+      // A gentle "scroll for more" hint — bounces in place until the user
+      // actually starts scrolling into the pin, then fades out.
+      gsap.to(indicatorRef.current, {
+        y: 10,
+        duration: 0.9,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+      })
+      gsap.to(indicatorRef.current, {
+        autoAlpha: 0,
+        duration: 0.2,
+        scrollTrigger: {
+          trigger: pinHeight,
+          start: 'top top',
+          end: 'top top-=1',
+          toggleActions: 'play none none reverse',
+        },
+      })
     })
 
     return () => ctx.revert()
@@ -91,6 +120,24 @@ export function Slider({ images }) {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+      <div
+        ref={indicatorRef}
+        className="pointer-events-none fixed inset-x-0 bottom-[132px] z-50 flex justify-center"
+      >
+        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/25 text-white/70">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
+          >
+            <path d="M12 5v14M19 12l-7 7-7-7" />
+          </svg>
         </div>
       </div>
     </section>
