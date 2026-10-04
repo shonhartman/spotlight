@@ -13,6 +13,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 const PIN_HEIGHT_VH = 250 // total scroll distance the section occupies
 const ANGLE_STEP = 4 // degrees between each card's resting rotation — small, because the circle's radius (huge) does the real work of spreading them out
 const CARD_WIDTH_VW = 30
+const ARROW_JOURNEY = 0.25 // fraction of the original scroll-to-pin distance the arrow stays up for
 
 export function Slider({ images }) {
   const pinHeightRef = useRef(null)
@@ -38,12 +39,26 @@ export function Slider({ images }) {
       const n = images.length
       const halfRange = ((n - 1) * ANGLE_STEP) / 2
       let rot = -halfRange
-      const distPerCard = (pinHeight.offsetHeight - window.innerHeight) / n
+
+      // Between the top of the page and the pin there's a stretch of dead
+      // scroll before anything happens. Rather than make people scroll
+      // through it, start the card entrance at the top of the page and
+      // shorten the pin by the same amount, so each card's pacing is
+      // unchanged but the fan starts arriving much sooner.
+      pinHeight.style.height = `${PIN_HEIGHT_VH}vh` // reset, in case a previous run shortened it
+      const pinTop = pinHeight.getBoundingClientRect().top + window.scrollY
+      const pinScroll = pinHeight.offsetHeight - window.innerHeight
+      const lead = Math.min(pinTop, pinScroll * 0.5)
+      pinHeight.style.height = `calc(${PIN_HEIGHT_VH}vh - ${lead}px)`
+      const distPerCard = pinScroll / n
 
       circleRefs.current.forEach((circle, i) => {
+        // How far past the pin start this card's window opens (negative =
+        // it opens before the pin engages).
+        const delta = distPerCard * i - lead
         const scrollTrigger = {
           trigger: pinHeight,
-          start: `top top-=${distPerCard * i}`,
+          start: delta >= 0 ? `top top-=${delta}` : `top top+=${-delta}`,
           end: `+=${distPerCard}`,
           scrub: true,
         }
@@ -68,8 +83,9 @@ export function Slider({ images }) {
         },
       )
 
-      // A gentle "scroll for more" hint — bounces in place until the user
-      // actually starts scrolling into the pin, then fades out.
+      // A gentle "scroll for more" hint — bounces in place until the cards
+      // start arriving, then fades out.
+      const arrowFadeOffset = Math.round(pinTop * (1 - ARROW_JOURNEY)) // scroll still left to the pin when it fades
       gsap.to(indicatorRef.current, {
         y: 10,
         duration: 0.9,
@@ -82,8 +98,8 @@ export function Slider({ images }) {
         duration: 0.2,
         scrollTrigger: {
           trigger: pinHeight,
-          start: 'top top',
-          end: 'top top-=1',
+          start: `top top+=${arrowFadeOffset}`,
+          end: `top top+=${arrowFadeOffset - 1}`,
           toggleActions: 'play none none reverse',
         },
       })
