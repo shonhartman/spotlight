@@ -1,7 +1,4 @@
 import Head from 'next/head'
-import { useRecoilValue } from 'recoil';
-import clsx from 'clsx'
-import { useState, useEffect } from 'react'
 
 import { Container } from '@/components/Container'
 import {
@@ -13,7 +10,6 @@ import {
 import { generateRssFeed } from '@/lib/generateRssFeed'
 import { getAllArticles } from '@/lib/getAllArticles'
 import {Slider} from '../components/Slider'
-import { sliderActiveState } from '../state/slider-active';
 import SocialLink from '@/social/SocialLink';
 import Article from '@/components/article/Article';
 import Newsletter from '@/components/Newsletter';
@@ -21,38 +17,14 @@ import Resume from '@/components/Resume';
 
 // SLIDER DATA
 const images = [
-  // Front
-  { position: [0, 0, 2.95], rotation: [0, 0, 0], url: '/shon_BW.png' },
-  // Left
-  { position: [-1.35, 0, 2.8], rotation: [0, 0, -0.01], url: '/riding.png' },
-  { position: [-2.45, 0, 3], rotation: [0, 0, -0.02], url: '/sun_studio_close.png' },
-  // Right
-  { position: [1.4, 0, 2.75], rotation: [0, -0, -0.01], url: '/tux_pattern.png' },
-  { position: [2.5, 0, 3], rotation: [0, -0, 0.01], url: '/outside_sun_studios.png' }
+  { url: '/shon_BW.png' },
+  { url: '/riding.png' },
+  { url: '/sun_studio_close.png' },
+  { url: '/tux_pattern.png' },
+  { url: '/outside_sun_studios.png' },
 ]
 
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    checkIsMobile()
-    window.addEventListener('resize', checkIsMobile)
-
-    return () => window.removeEventListener('resize', checkIsMobile)
-  }, [])
-
-  return isMobile
-}
-
 export default function Home({ articles }) {
-  // SLIDER STATE
-  const active = useRecoilValue(sliderActiveState);
-  const isMobile = useIsMobile()
-
   return (
     <>
       <Head>
@@ -68,8 +40,8 @@ export default function Home({ articles }) {
 
       </Head>
       {/* ABOVE THE FOLD */}
-      <Container className={clsx('mt-9', {'relative': active})}>
-        <div className={clsx('max-w-2xl', {'absolute': active})}>
+      <Container className="mt-9">
+        <div className="max-w-2xl">
           <h1 className="text-4xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 sm:text-5xl">
           Shaun Hartman - Creator
           </h1>
@@ -99,16 +71,10 @@ export default function Home({ articles }) {
           </div>
         </div>
       </Container>
-      {/* 3D SLIDER */}
-      <div className={clsx('', {
-        'relative': active,
-        'z-10': active,
-        'h-[2000px]': active,
-      })}>
-        <Slider images={images} />
-      </div>
+      {/* SLIDER */}
+      <Slider images={images} />
       {/* BELOW THE FOLD */}
-      <Container className={clsx('', {'relative -mt-32 -top-[1160px] z-0': active})}>
+      <Container>
         <div className="mx-auto grid max-w-xl grid-cols-1 gap-y-20 lg:max-w-none lg:grid-cols-2">
           <div className="flex flex-col gap-16">
             {articles.map((article) => (
