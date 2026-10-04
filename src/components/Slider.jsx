@@ -11,11 +11,21 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 // just teleport to the front" problem instead of hand-tuning z-index
 // timing against it.
 const PIN_HEIGHT_VH = 250 // total scroll distance the section occupies
-const PIN_HEIGHT_VH_MOBILE = 170 // a phone is tall and narrow, so the same vh is far more scrolling for much smaller cards
-const MOBILE_MAX_WIDTH = 640 // matches Tailwind's `sm`
 const ANGLE_STEP = 4 // degrees between each card's resting rotation — small, because the circle's radius (huge) does the real work of spreading them out
-const CARD_WIDTH_VW = 30
-const CARD_MIN_WIDTH_PX = 220 // keeps cards legible on phones, where 30vw is only ~120px
+const MOBILE_MAX_WIDTH = 640 // matches Tailwind's `sm`
+
+// Phones get a calmer variant. The hero is ~700px tall there, so the
+// desktop choreography (cards rise ~600px from far below the fold, each in
+// its own short slice of scroll) ends up moving cards ~5x faster than your
+// finger, which reads as frantic and jerky. Instead the cards start already
+// in place as a stack, so they show up with the page itself as you scroll
+// toward them (native, smooth scrolling), then fan open over overlapping,
+// longer windows with smoothed scrubbing.
+const MOBILE_ANGLE_STEP = 5 // wider than desktop so the outer cards run partly off-screen
+const MOBILE_PIN_DURATION = 0.5 // of the viewport height: scroll spent pinned while the fan opens
+const MOBILE_FAN_LEAD = 0.15 // of the viewport height: the fan starts opening this far before the pin
+const MOBILE_STAGGER = 0.14 // fraction of the fan's scroll span between one card starting and the next
+const MOBILE_SCRUB = 0.8 // seconds the scrubbed motion takes to catch up to the scroll position, which smooths out iOS's uneven scroll events
 const ARROW_JOURNEY = 0.25 // fraction of the original scroll-to-pin distance the arrow stays up for
 const ARROW_SIZE_PX = 48
 const ARROW_GAP_PX = 40 // breathing room between the hero content and the arrow
@@ -43,35 +53,54 @@ export function Slider({ images }) {
     const ctx = gsap.context(() => {
       const pinHeight = pinHeightRef.current
       const n = images.length
-      const halfRange = ((n - 1) * ANGLE_STEP) / 2
+      const mobile = window.innerWidth < MOBILE_MAX_WIDTH
+      const angleStep = mobile ? MOBILE_ANGLE_STEP : ANGLE_STEP
+      const halfRange = ((n - 1) * angleStep) / 2
       let rot = -halfRange
 
-      // Between the top of the page and the pin there's a stretch of dead
-      // scroll before anything happens. Rather than make people scroll
-      // through it, start the card entrance at the top of the page and
-      // shorten the pin by the same amount, so each card's pacing is
-      // unchanged but the fan starts arriving much sooner.
-      const pinHeightVh = window.innerWidth < MOBILE_MAX_WIDTH ? PIN_HEIGHT_VH_MOBILE : PIN_HEIGHT_VH
-      pinHeight.style.height = `${pinHeightVh}vh` // reset, in case a previous run shortened it
+      // Per-card scroll windows, as { offset, length } in scroll px, where
+      // offset is relative to the point the pin engages (negative = before).
+      let windows
+      if (mobile) {
+        const vh = window.innerHeight
+        const pinDuration = Math.round(vh * MOBILE_PIN_DURATION)
+        pinHeight.style.height = `${pinDuration + vh}px`
+        const fanStart = -Math.round(vh * MOBILE_FAN_LEAD)
+        const span = pinDuration - fanStart
+        const stagger = span * MOBILE_STAGGER
+        const length = span - stagger * (n - 1)
+        windows = images.map((_, i) => ({ offset: fanStart + stagger * i, length }))
+        // Already at their resting height, so cards ride in with the page
+        // instead of flying up from below the fold.
+        cardRefs.current.forEach((card) => gsap.set(card, { xPercent: -50, yPercent: -50, x: 0, y: 0 }))
+      } else {
+        // Between the top of the page and the pin there's a stretch of dead
+        // scroll before anything happens. Rather than make people scroll
+        // through it, start the card entrance at the top of the page and
+        // shorten the pin by the same amount, so each card's pacing is
+        // unchanged but the fan starts arriving much sooner.
+        pinHeight.style.height = `${PIN_HEIGHT_VH}vh` // reset, in case a previous run shortened it
+        const top = pinHeight.getBoundingClientRect().top + window.scrollY
+        const fullScroll = pinHeight.offsetHeight - window.innerHeight
+        const lead = Math.min(top, fullScroll * 0.5)
+        pinHeight.style.height = `calc(${PIN_HEIGHT_VH}vh - ${lead}px)`
+        const distPerCard = fullScroll / n
+        windows = images.map((_, i) => ({ offset: distPerCard * i - lead, length: distPerCard }))
+      }
       const pinTop = pinHeight.getBoundingClientRect().top + window.scrollY
-      const pinScroll = pinHeight.offsetHeight - window.innerHeight
-      const lead = Math.min(pinTop, pinScroll * 0.5)
-      pinHeight.style.height = `calc(${pinHeightVh}vh - ${lead}px)`
-      const distPerCard = pinScroll / n
 
       circleRefs.current.forEach((circle, i) => {
-        // How far past the pin start this card's window opens (negative =
-        // it opens before the pin engages).
-        const delta = distPerCard * i - lead
+        const { offset, length } = windows[i]
         const scrollTrigger = {
           trigger: pinHeight,
-          start: delta >= 0 ? `top top-=${delta}` : `top top+=${-delta}`,
-          end: `+=${distPerCard}`,
-          scrub: true,
+          start: offset >= 0 ? `top top-=${offset}` : `top top+=${-offset}`,
+          end: `+=${length}`,
+          scrub: mobile ? MOBILE_SCRUB : true,
         }
-        gsap.to(circle, { rotation: rot, ease: 'power1.out', scrollTrigger })
-        gsap.to(cardRefs.current[i], { rotation: rot, y: '-50%', ease: 'power1.out', scrollTrigger })
-        rot += ANGLE_STEP
+        const ease = mobile ? 'none' : 'power1.out'
+        gsap.to(circle, { rotation: rot, ease, scrollTrigger })
+        gsap.to(cardRefs.current[i], mobile ? { rotation: rot, ease, scrollTrigger } : { rotation: rot, y: '-50%', ease, scrollTrigger })
+        rot += angleStep
       })
 
       gsap.fromTo(
@@ -85,7 +114,8 @@ export function Slider({ images }) {
             start: 'top top',
             end: 'bottom bottom',
             pin: containerRef.current,
-            scrub: true,
+            scrub: mobile ? MOBILE_SCRUB : true,
+            anticipatePin: mobile ? 1 : 0,
           },
         },
       )
@@ -154,9 +184,8 @@ export function Slider({ images }) {
                   ref={(el) => (cardRefs.current[i] = el)}
                   src={image.url}
                   alt={`Slide ${i + 1}`}
-                  className="absolute left-1/2 top-0 rounded-lg object-cover shadow-xl"
+                  className="absolute left-1/2 top-0 w-[72vw] rounded-lg object-cover shadow-xl sm:w-[max(30vw,220px)]"
                   style={{
-                    width: `max(${CARD_WIDTH_VW}vw, ${CARD_MIN_WIDTH_PX}px)`,
                     aspectRatio: 0.75,
                     transform: 'translate(-50%, 55vh)',
                     willChange: 'transform',
