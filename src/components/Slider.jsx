@@ -11,9 +11,15 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 // just teleport to the front" problem instead of hand-tuning z-index
 // timing against it.
 const PIN_HEIGHT_VH = 250 // total scroll distance the section occupies
+const PIN_HEIGHT_VH_MOBILE = 170 // a phone is tall and narrow, so the same vh is far more scrolling for much smaller cards
+const MOBILE_MAX_WIDTH = 640 // matches Tailwind's `sm`
 const ANGLE_STEP = 4 // degrees between each card's resting rotation — small, because the circle's radius (huge) does the real work of spreading them out
 const CARD_WIDTH_VW = 30
+const CARD_MIN_WIDTH_PX = 220 // keeps cards legible on phones, where 30vw is only ~120px
 const ARROW_JOURNEY = 0.25 // fraction of the original scroll-to-pin distance the arrow stays up for
+const ARROW_SIZE_PX = 48
+const ARROW_GAP_PX = 40 // breathing room between the hero content and the arrow
+const ARROW_BOTTOM_PX = 132 // where the arrow sits when the hero leaves plenty of room (desktop)
 
 export function Slider({ images }) {
   const pinHeightRef = useRef(null)
@@ -45,11 +51,12 @@ export function Slider({ images }) {
       // through it, start the card entrance at the top of the page and
       // shorten the pin by the same amount, so each card's pacing is
       // unchanged but the fan starts arriving much sooner.
-      pinHeight.style.height = `${PIN_HEIGHT_VH}vh` // reset, in case a previous run shortened it
+      const pinHeightVh = window.innerWidth < MOBILE_MAX_WIDTH ? PIN_HEIGHT_VH_MOBILE : PIN_HEIGHT_VH
+      pinHeight.style.height = `${pinHeightVh}vh` // reset, in case a previous run shortened it
       const pinTop = pinHeight.getBoundingClientRect().top + window.scrollY
       const pinScroll = pinHeight.offsetHeight - window.innerHeight
       const lead = Math.min(pinTop, pinScroll * 0.5)
-      pinHeight.style.height = `calc(${PIN_HEIGHT_VH}vh - ${lead}px)`
+      pinHeight.style.height = `calc(${pinHeightVh}vh - ${lead}px)`
       const distPerCard = pinScroll / n
 
       circleRefs.current.forEach((circle, i) => {
@@ -105,7 +112,30 @@ export function Slider({ images }) {
       })
     })
 
-    return () => ctx.revert()
+    // The arrow is fixed to the viewport so it's visible at load, but on a
+    // phone the hero text wraps much taller, so a fixed offset lands it on
+    // top of the hero. Keep it clear of the hero, up to its normal spot.
+    const placeIndicator = () => {
+      const heroBottom = pinHeightRef.current.getBoundingClientRect().top + window.scrollY
+      const room = window.innerHeight - heroBottom - ARROW_SIZE_PX - ARROW_GAP_PX
+      indicatorRef.current.style.bottom = `${Math.min(ARROW_BOTTOM_PX, Math.max(16, room))}px`
+    }
+    placeIndicator()
+
+    // Width only: iOS Safari fires resize whenever its toolbar collapses,
+    // which would make the arrow jump around as you scroll.
+    let lastWidth = window.innerWidth
+    const onResize = () => {
+      if (window.innerWidth === lastWidth) return
+      lastWidth = window.innerWidth
+      placeIndicator()
+    }
+    window.addEventListener('resize', onResize)
+
+    return () => {
+      window.removeEventListener('resize', onResize)
+      ctx.revert()
+    }
   }, [images.length])
 
   return (
@@ -126,7 +156,7 @@ export function Slider({ images }) {
                   alt={`Slide ${i + 1}`}
                   className="absolute left-1/2 top-0 rounded-lg object-cover shadow-xl"
                   style={{
-                    width: `${CARD_WIDTH_VW}vw`,
+                    width: `max(${CARD_WIDTH_VW}vw, ${CARD_MIN_WIDTH_PX}px)`,
                     aspectRatio: 0.75,
                     transform: 'translate(-50%, 55vh)',
                     willChange: 'transform',
