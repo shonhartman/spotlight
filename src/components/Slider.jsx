@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -14,17 +14,19 @@ const PIN_HEIGHT_VH = 250 // total scroll distance the section occupies
 const ANGLE_STEP = 4 // degrees between each card's resting rotation — small, because the circle's radius (huge) does the real work of spreading them out
 const MOBILE_MAX_WIDTH = 640 // matches Tailwind's `sm`
 
-// Phones get a calmer variant. The hero is ~700px tall there, so the
-// desktop choreography (cards rise ~600px from far below the fold, each in
-// its own short slice of scroll) ends up moving cards ~5x faster than your
-// finger, which reads as frantic and jerky. Instead the cards start already
-// in place as a stack, so they show up with the page itself as you scroll
-// toward them (native, smooth scrolling), then fan open over overlapping,
-// longer windows with smoothed scrubbing.
+// Phones get the same effect, calmer. The hero is ~700px tall there, so the
+// desktop choreography (cards rising ~600px from below the fold while the
+// section is pinned, each in a short slice of scroll) moves cards ~5x faster
+// than your finger and nothing shows up until you're deep into the page.
+// Instead there's no pin: the section is only a little taller than a card
+// and the cards start rising from below as soon as you start scrolling, one
+// after another with overlapping timing, each landing on top of the last
+// and swinging into the fan. They only rise a short way because the page is
+// scrolling them up the screen at the same time. (Starting them piled in
+// one spot, or sliding in from the sides, both read as a different effect.)
 const MOBILE_ANGLE_STEP = 5 // wider than desktop so the outer cards run partly off-screen
-const MOBILE_PIN_DURATION = 0.5 // of the viewport height: scroll spent pinned while the fan opens
-const MOBILE_FAN_LEAD = 0.15 // of the viewport height: the fan starts opening this far before the pin
 const MOBILE_STAGGER = 0.14 // fraction of the fan's scroll span between one card starting and the next
+const MOBILE_RISE_MARGIN_PX = 80 // extra rise so a card that hasn't started yet is still below the bottom of the screen
 const MOBILE_SCRUB = 0.8 // seconds the scrubbed motion takes to catch up to the scroll position, which smooths out iOS's uneven scroll events
 const ARROW_JOURNEY = 0.25 // fraction of the original scroll-to-pin distance the arrow stays up for
 const ARROW_SIZE_PX = 48
@@ -38,6 +40,26 @@ export function Slider({ images }) {
   const circleRefs = useRef([])
   const cardRefs = useRef([])
   const indicatorRef = useRef(null)
+
+  // The effect below builds the phone or desktop version from the screen size
+  // at the moment it runs, so it has to run again when the width changes
+  // (device toolbar, resizing the window, rotating a phone). Otherwise the
+  // page is left running the wrong version at the new size. Only the width
+  // counts: iOS Safari fires resize whenever its toolbar collapses, and
+  // setting the same width again is a no-op.
+  const [width, setWidth] = useState(() => (typeof window === 'undefined' ? 0 : window.innerWidth))
+  useEffect(() => {
+    let timer
+    const onResize = () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => setWidth(window.innerWidth), 200)
+    }
+    window.addEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      clearTimeout(timer)
+    }
+  }, [])
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
@@ -58,21 +80,42 @@ export function Slider({ images }) {
       const halfRange = ((n - 1) * angleStep) / 2
       let rot = -halfRange
 
-      // Per-card scroll windows, as { offset, length } in scroll px, where
-      // offset is relative to the point the pin engages (negative = before).
-      let windows
       if (mobile) {
+        pinHeight.style.height = 'auto' // no pin, so no spacer: just the container's own height
         const vh = window.innerHeight
-        const pinDuration = Math.round(vh * MOBILE_PIN_DURATION)
-        pinHeight.style.height = `${pinDuration + vh}px`
-        const fanStart = -Math.round(vh * MOBILE_FAN_LEAD)
-        const span = pinDuration - fanStart
+        const top = pinHeight.getBoundingClientRect().top + window.scrollY
+
+        // The whole fan runs from the top of the page until just before the
+        // section's bottom edge reaches the screen, so cards never get sliced
+        // off by that edge (the blog starts right below it) while still rising.
+        const bottomReachesScreenAt = top + containerRef.current.offsetHeight - vh
+        const span = Math.max(vh * 0.5, bottomReachesScreenAt - 20)
         const stagger = span * MOBILE_STAGGER
         const length = span - stagger * (n - 1)
-        windows = images.map((_, i) => ({ offset: fanStart + stagger * i, length }))
-        // Already at their resting height, so cards ride in with the page
-        // instead of flying up from below the fold.
-        cardRefs.current.forEach((card) => gsap.set(card, { xPercent: -50, yPercent: -50, x: 0, y: 0 }))
+
+        // A card that hasn't started yet sits `rise` px below its resting
+        // spot. Make that enough that it's still under the bottom of the
+        // screen when its turn comes, so cards arrive one at a time instead of
+        // sitting there as a visible pile.
+        const card0 = cardRefs.current[0]
+        const restTop = (containerRef.current.offsetHeight - card0.offsetHeight) / 2 // card's top edge within the section, at rest
+        const comesIntoViewAt = top + restTop - vh // scroll at which a card at rest would reach the bottom of the screen
+        const rise = Math.max(160, stagger * (n - 1) - comesIntoViewAt + MOBILE_RISE_MARGIN_PX)
+
+        circleRefs.current.forEach((circle, i) => {
+          const scrollTrigger = {
+            trigger: containerRef.current,
+            start: `top top+=${Math.round(top - stagger * i)}`, // card i starts at scroll = stagger * i
+            end: `+=${Math.round(length)}`,
+            scrub: MOBILE_SCRUB,
+          }
+          // Centered on its resting spot like desktop's end state, `rise`
+          // below it until its turn.
+          gsap.set(cardRefs.current[i], { xPercent: -50, yPercent: -50, x: 0, y: rise })
+          gsap.to(circle, { rotation: rot, ease: 'none', scrollTrigger })
+          gsap.to(cardRefs.current[i], { rotation: rot, y: 0, ease: 'none', scrollTrigger })
+          rot += angleStep
+        })
       } else {
         // Between the top of the page and the pin there's a stretch of dead
         // scroll before anything happens. Rather than make people scroll
@@ -85,44 +128,43 @@ export function Slider({ images }) {
         const lead = Math.min(top, fullScroll * 0.5)
         pinHeight.style.height = `calc(${PIN_HEIGHT_VH}vh - ${lead}px)`
         const distPerCard = fullScroll / n
-        windows = images.map((_, i) => ({ offset: distPerCard * i - lead, length: distPerCard }))
+
+        circleRefs.current.forEach((circle, i) => {
+          // How far past the pin start this card's window opens (negative =
+          // it opens before the pin engages).
+          const delta = distPerCard * i - lead
+          const scrollTrigger = {
+            trigger: pinHeight,
+            start: delta >= 0 ? `top top-=${delta}` : `top top+=${-delta}`,
+            end: `+=${distPerCard}`,
+            scrub: true,
+          }
+          gsap.to(circle, { rotation: rot, ease: 'power1.out', scrollTrigger })
+          gsap.to(cardRefs.current[i], { rotation: rot, y: '-50%', ease: 'power1.out', scrollTrigger })
+          rot += angleStep
+        })
+
+        gsap.fromTo(
+          circlesRef.current,
+          { y: '5%' },
+          {
+            y: '-5%',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: pinHeight,
+              start: 'top top',
+              end: 'bottom bottom',
+              pin: containerRef.current,
+              scrub: true,
+            },
+          },
+        )
       }
       const pinTop = pinHeight.getBoundingClientRect().top + window.scrollY
 
-      circleRefs.current.forEach((circle, i) => {
-        const { offset, length } = windows[i]
-        const scrollTrigger = {
-          trigger: pinHeight,
-          start: offset >= 0 ? `top top-=${offset}` : `top top+=${-offset}`,
-          end: `+=${length}`,
-          scrub: mobile ? MOBILE_SCRUB : true,
-        }
-        const ease = mobile ? 'none' : 'power1.out'
-        gsap.to(circle, { rotation: rot, ease, scrollTrigger })
-        gsap.to(cardRefs.current[i], mobile ? { rotation: rot, ease, scrollTrigger } : { rotation: rot, y: '-50%', ease, scrollTrigger })
-        rot += angleStep
-      })
-
-      gsap.fromTo(
-        circlesRef.current,
-        { y: '5%' },
-        {
-          y: '-5%',
-          ease: 'none',
-          scrollTrigger: {
-            trigger: pinHeight,
-            start: 'top top',
-            end: 'bottom bottom',
-            pin: containerRef.current,
-            scrub: mobile ? MOBILE_SCRUB : true,
-            anticipatePin: mobile ? 1 : 0,
-          },
-        },
-      )
-
       // A gentle "scroll for more" hint — bounces in place until the cards
       // start arriving, then fades out.
-      const arrowFadeOffset = Math.round(pinTop * (1 - ARROW_JOURNEY)) // scroll still left to the pin when it fades
+      const arrowFadeOffset = Math.round(pinTop * (1 - ARROW_JOURNEY)) // scroll still left to the pin (or, on phones, to the section) when it fades
       gsap.to(indicatorRef.current, {
         y: 10,
         duration: 0.9,
@@ -152,27 +194,18 @@ export function Slider({ images }) {
     }
     placeIndicator()
 
-    // Width only: iOS Safari fires resize whenever its toolbar collapses,
-    // which would make the arrow jump around as you scroll.
-    let lastWidth = window.innerWidth
-    const onResize = () => {
-      if (window.innerWidth === lastWidth) return
-      lastWidth = window.innerWidth
-      placeIndicator()
-    }
-    window.addEventListener('resize', onResize)
-
-    return () => {
-      window.removeEventListener('resize', onResize)
-      ctx.revert()
-    }
-  }, [images.length])
+    return () => ctx.revert()
+  }, [images.length, width])
 
   return (
-    <section className="relative overflow-hidden">
-      <div ref={pinHeightRef} style={{ height: `${PIN_HEIGHT_VH}vh` }}>
-        <div ref={containerRef} className="relative h-screen">
-          <div ref={circlesRef} className="absolute inset-0">
+    // On phones the cards can still be mid-rise when the blog below comes on
+    // screen, so the section sits above it and only clips sideways (the huge
+    // circles would otherwise add horizontal scroll). The circles are
+    // transparent but cover the blog's top, so they must not catch taps.
+    <section className="relative z-10 overflow-x-clip overflow-y-visible sm:z-auto sm:overflow-hidden">
+      <div ref={pinHeightRef} className="sm:h-[250vh]">
+        <div ref={containerRef} className="relative h-[135vw] sm:h-screen">
+          <div ref={circlesRef} className="pointer-events-none absolute inset-0">
             {images.map((image, i) => (
               <div
                 key={image.url}
