@@ -142,7 +142,7 @@ export function Slider({ images }) {
         ref={indicatorRef}
         className="pointer-events-none fixed inset-x-0 bottom-[132px] z-50 flex justify-center"
       >
-        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/25 text-white/70">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-900/25 text-zinc-700 dark:border-white/25 dark:text-white/70">
           <svg
             viewBox="0 0 24 24"
             fill="none"
