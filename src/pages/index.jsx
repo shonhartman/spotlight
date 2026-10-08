@@ -12,7 +12,7 @@ import { getAllArticles } from '@/lib/getAllArticles'
 import {Slider} from '../components/Slider'
 import SocialLink from '@/social/SocialLink';
 import Article from '@/components/article/Article';
-import Newsletter from '@/components/Newsletter';
+import EmailMe from '@/components/EmailMe';
 import Resume from '@/components/Resume';
 
 // SLIDER DATA
@@ -82,7 +82,7 @@ export default function Home({ articles }) {
             ))}
           </div>
           <div className="space-y-10 lg:pl-16 xl:pl-24">
-            <Newsletter />
+            <EmailMe />
             <Resume />
           </div>
         </div>
